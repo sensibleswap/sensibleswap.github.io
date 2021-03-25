@@ -1,0 +1,83 @@
+.container {
+  background-color: #fff;
+  width: 375px;
+  min-height: 500px;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 10px 25px rgba(213, 213, 223, 0.60);
+  box-shadow: 0 10px 25px rgba(213, 213, 223, 0.60);
+}
+
+.head {
+  height: 80px;
+  border-bottom: 1px solid #E8E8E8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.done {
+  cursor: pointer;
+  color: #2F80ED;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+
+.content {
+  padding: 20px 20px 40px;
+}
+
+.search_input {
+  :global {
+    .ant-input {
+      border-radius: 8px 0 0 8px;
+      height: 50px;
+      padding-top: 15px;
+      padding-left: 15px;
+      padding-bottom: 15px;
+    }
+    .ant-input-group-addon .ant-btn {
+      border-radius: 0 8px 8px 0 !important;
+      height: 50px;
+      padding-top: 15px;
+
+    }
+  }
+}
+
+.token_list {
+  .item {
+    display: flex;
+    align-items: center;
+    background-color: #f6f6f9;
+    border-radius: 55px;
+    margin-top: 15px;
+    height: 70px;
+    padding: 0 20px 0 15px;
+    cursor: pointer;
+
+    .icon {
+      margin-right: 15px;
+    }
+
+    .title {
+      width: 216px;
+    }
+
+    .name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .total {
+      font-size: 12px;
+      font-weight: 400;
+    }
+  }
+}

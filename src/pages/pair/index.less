@@ -1,0 +1,49 @@
+@import '../layout.less';
+
+
+.main_title {
+  h2 {
+    font-weight: 400;
+    font-size: 36px;
+    margin-bottom: 0px;
+    display: flex;
+
+    .icon {
+      margin-right: 15px;
+
+      :global {
+        .iconfont {
+          font-size: 40px;
+
+          &:first-child {
+            margin-right: -10px;
+            position: relative;
+          }
+        }
+      }
+    }
+  }
+
+  .subtitle {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .desc {
+    font-size: 14px;
+
+  }
+}
+
+
+.btns {
+  display: flex;
+  justify-content: space-between;
+  .btn {
+    width: 220px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 18px;
+    font-weight: 500;
+  }
+}

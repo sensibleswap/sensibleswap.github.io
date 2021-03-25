@@ -1,0 +1,151 @@
+@import '../layout.less';
+
+
+.main_title {
+  h2 {
+    font-weight: 400;
+    font-size: 36px;
+    margin-bottom: 0px;
+  }
+
+  .subtitle {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .desc {
+    font-size: 14px;
+
+    span {
+      font-weight: 700;
+      color: #2BB696;
+    }
+  }
+}
+
+.title {
+  display: flex;
+  justify-content: space-between;
+
+  a {
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.list {
+  margin-top: 15px;
+}
+
+.col_1 {
+  width: 100px;
+}
+
+.col_2 {
+  width: 125px;
+}
+
+.col_3 {
+  width: 100px;
+}
+
+.q_col_1 {
+  width: 220px;
+}
+
+.q_col_2 {
+  width: 110px;
+}
+
+
+.list_hd {
+  background-color: #f6f6f9;
+  height: 60px;
+  line-height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 15px;
+  display: flex;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.list_item {
+  padding: 10px 15px;
+  height: 50px;
+  display: flex;
+  font-size: 14px;
+  font-weight: 400;
+  align-items: center;
+  border-bottom: 1px solid #e8e8e8;
+  position: relative;
+  cursor: pointer;
+
+  .col_1,
+  .q_col_1 {
+    display: flex;
+    align-items: center;
+
+    .icon {
+      margin-right: 10px;
+
+      :global(.iconfont) {
+        font-size: 30px;
+      }
+    }
+  }
+
+  .q_col_1 {
+
+    .icon {
+      :global(.iconfont:first-child) {
+        margin-right: -10px;
+        position: relative;
+      }
+    }
+
+    .item_title {
+      color: #2F80ED;
+    }
+  }
+
+  .delete {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    right: 0;
+    top: 10px;
+    display: none;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+    color: #2F80ED;
+
+  }
+
+}
+
+.list_item:hover .delete {
+  display: block;
+}
+
+.no_data {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  text-align: center;
+  padding-top: 60px;
+  font-weight: 500;
+  margin-top: 15px;
+  font-size: 18px;
+  height: 200px;
+  background-color: #fff;
+  margin-bottom: 30px;
+}
+
+.box .no_data {
+  border: none;
+}
+
+.no_data_title {
+  margin-bottom: 20px;
+}
