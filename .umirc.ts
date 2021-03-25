@@ -27,7 +27,7 @@ export default defineConfig({
       to: 'assets/'
     }
   ],
-  chunks: ['vendors', 'volt', 'umi'],
+  chunks: ['vendors', 'voltsdk', 'umi'],
   chainWebpack: function (config, { webpack }) {
     config.merge({
       optimization: {
@@ -38,7 +38,7 @@ export default defineConfig({
           automaticNameDelimiter: '.',
           cacheGroups: {
 
-            volt: {
+            voltsdk: {
               name: "voltsdk",
               test: /[\\/]node_modules[\\/](voltsdk)[\\/]/,
               priority: 10,
