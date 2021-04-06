@@ -2,10 +2,11 @@
 import React, { Component } from 'react';
 import { jc } from 'common/utils';
 import CustomIcon from 'components/icon';
+import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
 import { Button } from 'antd';
-import {DownOutlined, SettingOutlined, CloseOutlined} from '@ant-design/icons';
+import { DownOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import Setting from '../setting';
 import { connect } from 'umi';
@@ -40,7 +41,16 @@ export default class Swap extends Component {
             showDetail: false,
             bsvToToken: true,
             bsvValue: 0,
-            tokenValue: 0
+            tokenValue: 0,
+            origin_token: {
+                name: 'BSV',
+                icon: 'iconlogo-bitcoin'
+            },
+            aim_token: {
+                name: 'vUSD',
+                icon: 'iconlogo-vusd'
+            }
+
         }
     }
 
@@ -62,14 +72,14 @@ export default class Swap extends Component {
     }
 
     renderBsv() {
-        const {bsvValue} = this.state;
+        const { bsvValue, origin_token } = this.state;
         return <div className={styles.box}>
             <div className={styles.coin}>
-                <CustomIcon type='iconlogo-bitcoin' style={{ fontSize: 40, marginRight: 10 }} />
-                <div className={styles.name}>BSV</div>
-                <DownOutlined onClick={() => this.showUI('selectToken')} />
+                <TokenLogo name={origin_token.name} icon={origin_token.icon} />
+                <div className={styles.name}>{origin_token.name}</div>
+                <DownOutlined onClick={() => this.showUI('selectToken_origin')} />
             </div>
-            <input className={styles.input} value={bsvValue} onChange={(e)=>{
+            <input className={styles.input} value={bsvValue} onChange={(e) => {
                 this.setState({
                     bsvValue: e.target.value
                 })
@@ -78,12 +88,12 @@ export default class Swap extends Component {
     }
 
     renderToken() {
-        const { tokenValue} = this.state;
+        const { tokenValue, aim_token } = this.state;
         return <div className={styles.box}>
             <div className={styles.coin}>
-                <CustomIcon type='iconlogo-vusd' style={{ fontSize: 40, marginRight: 10 }} />
-                <div className={styles.name}>vUSD</div>
-                <DownOutlined onClick={() => this.showUI('selectToken')} />
+                <TokenLogo name={aim_token.name} icon={aim_token.icon} />
+                <div className={styles.name}>{aim_token.name}</div>
+                <DownOutlined onClick={() => this.showUI('selectToken_aim')} />
             </div>
             <input className={styles.input} value={tokenValue} onChange={(e) => {
                 this.setState({
@@ -99,7 +109,7 @@ export default class Swap extends Component {
         return <div className={styles.content}>
             <div className={styles.title}>
                 <h3>{_('you_pay')}</h3>
-                <div className={styles.balance} onClick={()=>{
+                <div className={styles.balance} onClick={() => {
                     this.setState({
                         bsvValue: balance
                     })
@@ -233,7 +243,7 @@ export default class Swap extends Component {
                     })}
                 </div>
                 <div className={styles.setting}>
-                <SettingOutlined onClick={() => this.showUI('setting')} />
+                    <SettingOutlined onClick={() => this.showUI('setting')} />
                 </div>
             </div>
             {formFinish ? this.renderResult() : this.renderForm()}
@@ -241,12 +251,32 @@ export default class Swap extends Component {
         </div>;
     }
 
+    selectedToken = (tokenid) => {
+        if (tokenid) {
+            const { page } = this.state;
+            const { token } = this.props.wallet;
+            const _token = token.find(v => v.tokenid === tokenid);
+            if (page === 'selectToken_origin') {
+
+                this.setState({
+                    origin_token: _token
+                })
+            }
+            if (page === 'selectToken_aim') {
+                this.setState({
+                    aim_token: _token
+                })
+            }
+        }
+        this.showUI('form');
+    }
+
     render() {
         const { page } = this.state;
         if (page === 'form') {
             return this.renderSwap()
-        } else if (page === 'selectToken') {
-            return <SelectToken close={() => this.showUI('form')} />
+        } else if (page === 'selectToken_origin' || page === 'selectToken_aim') {
+            return <SelectToken close={this.selectedToken} />
         } else if (page === 'setting') {
             return <Setting close={() => this.showUI('form')} />
         }

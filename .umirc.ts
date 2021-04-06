@@ -2,10 +2,13 @@ import { defineConfig } from 'umi';
 import routes from './config/routes';
 
 export default defineConfig({
+  history: {
+    type: 'hash',
+  },
   nodeModulesTransform: {
     type: 'none',
   },
-  favicon: '/assets/fav.png',
+  favicon: '/assets/ts.png',
   routes,
   fastRefresh: {},
   cssModulesTypescriptLoader: {},

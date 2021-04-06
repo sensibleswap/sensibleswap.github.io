@@ -24,7 +24,7 @@ const menu = [
 export default class Head extends Component {
     constructor(props) {
         super(props);
-        const hash = window.location.pathname.substr(1);
+        const hash = window.location.hash.substr(2);
         let currentMenu = '';
         menu.forEach(item => {
             if (item.key === hash) {

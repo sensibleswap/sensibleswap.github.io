@@ -27,7 +27,7 @@
     "js-cookie": "^2.2.1",
     "qrcode.react": "^1.0.1",
     "umi": "^3.4.6",
-    "voltsdk": "^1.0.14"
+    "voltsdk": "^1.1.0"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
