@@ -24,3 +24,12 @@ export function agentVersion() {
     }
     return 'PC';
 }
+
+
+export const slippage_data = {
+    storage_name: 'VoltTokenSwapSlipTol',
+    datas: ['0.1%', '0.5%', '1%', '5%'],
+    defaultIndex: 2
+}
+
+export const feeRate = 0.0035;

@@ -1,6 +1,7 @@
 .container {
   background-color: #fff;
   width: 375px;
+  height: 677px;
   min-height: 500px;
   border-radius: 8px;
   -webkit-box-shadow: 0 10px 25px rgba(213, 213, 223, 0.60);
@@ -97,6 +98,9 @@
         margin-right: 15px;
         margin-left: 10px;
     }
+    :global(.ant-form-item) {
+      margin-bottom: 0;
+    }
 }
 
 .key_value {
@@ -107,9 +111,7 @@
     margin-top: 15px;
 }
 
-.btn {
-    color: #2F80ED;
-    background-color: rgba(47,128,237, 0.2);
+.btn, .btn_warn, .btn_wait {
     border: none;
     border-radius: 8px;
     height: 60px;
@@ -119,6 +121,15 @@
     margin: 10px 0;
     width: 100%;
     
+}
+.btn_wait,.btn_wait:hover, .btn_wait:focus, .btn_wait:active {
+
+    color: #2F80ED;
+    background-color: rgba(47,128,237, 0.2);
+}
+.btn_warn,.btn_warn:hover, .btn_warn:focus, .btn_warn:active {
+  background-color: darkred;
+  color: #fff;
 }
 
 .input {

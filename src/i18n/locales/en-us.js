@@ -161,7 +161,8 @@ const texts = {
     lb_9: 'No front-running, which happens on ETH DEXs that causes loss to users',
     lb_10: 'Instant matching between users or user-pool with low fees, instant settlement',
     
-    refresh_url: 'Click Refresh QR Code'
+    refresh_url: 'Click Refresh QR Code',
+    swap_anyway: 'Swap Anyway',
 
 
 }

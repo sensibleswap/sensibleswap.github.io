@@ -8,35 +8,6 @@ import { connect } from 'umi';
 import styles from './index.less';
 import _ from 'i18n';
 
-const data = [
-    {
-        id: 1,
-        icon: 'iconlogo-vusd',
-        name: 'vUSD',
-        symbol: 'VUSD',
-        total: 1000
-    },
-    {
-        id: 2,
-        icon: 'iconlogo-vbtc',
-        name: 'vBTC',
-        symbol: 'VBTC',
-        total: 0
-    },
-    {
-        id: 3,
-        icon: 'iconlogo-veth',
-        name: 'vETH',
-        symbol: 'VETH',
-        total: 100
-    }
-]
-const bsvItem = {
-    name: 'bsv',
-    tokenid: 1,
-    icon: 'iconlogo-bitcoin'
-};
-
 const { Search } = Input;
 @connect(({ token, user }) => {
     return {
@@ -49,31 +20,24 @@ export default class SelectToken extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            showList: []
+            showList: props.tokens,
         }
     }
 
-    componentDidMount() {
-        const {token} = this.props.wallet;
-        if(!token) return;
+    // componentDidMount() {
+    //     const {tokens} = this.props;
 
-        this.setState({
-            showList: [
-                bsvItem,
-                ...token
-            ],
-        })
-    }
+    //     this.setState({
+    //         showList: [
+    //             bsvItem,
+    //             ...token
+    //         ],
+    //     })
+    // }
 
     select = (id) => {
         // const { dispatch, close, type } = this.props
         
-        // dispatch({
-        //     type: 'token/save',
-        //     payload: {
-        //         [`current_token_${type}`]: id
-        //     }
-        // })
         this.props.close(id)
     }
 
@@ -88,22 +52,19 @@ export default class SelectToken extends Component {
 
     searchByKeywords(keywords, searchArr) {
         const keywordsExp = new RegExp(".*?" + this.escapeRegExpWildcards(keywords) + ".*?", "img");
-        return searchArr.filter(v => (keywordsExp.test(v.name) || keywordsExp.test(v.symbol) || keywords == v.tokenid));
+        return searchArr.filter(v => (keywordsExp.test(v.name) || keywordsExp.test(v.symbol) || keywords == v.tokenId));
     }
 
     handleChange = (e) => {
         const { value } = e.target;
-        const { token } = this.props.wallet;
-        if(!token) return;
+        const { tokens } = this.props;
+        // if(!token) return;
         if (!value) {
             return this.setState({
-                showList: [
-                    bsvItem,
-                    ...token
-                ]
+                showList: tokens
             })
         }
-        const res = this.searchByKeywords(value, [bsvItem, ...token]);
+        const res = this.searchByKeywords(value, tokens);
         this.setState({
             showList: res
         })
@@ -129,14 +90,14 @@ export default class SelectToken extends Component {
                 </div>
                 <div className={styles.token_list}>
                     {showList && showList.map((item) => (
-                        <div className={styles.item} key={item.tokenid} onClick={()=>this.select(item.tokenid)}>
+                        <div className={styles.item} key={item.tokenId} onClick={()=>this.select(item.tokenId)}>
                             <div className={styles.icon}><TokenLogo name={item.name} icon={item.icon} /></div>
                             <div className={styles.title}>
-                                <div className={styles.name}>{item.name}</div>
-                                <div className={styles.total}>{item.value} {item.symbol}</div>
+                                <div className={styles.name}>{item.symbol && item.symbol.toUpperCase()}</div>
+                                <div className={styles.total}>{item.name}</div>
                             </div>
                             <div className={styles.selected}>
-                                {item.tokenid === this.props[`current_token_${type}`] && <CheckCircleOutlined theme="filled" style={{color: '#2F80ED', fontSize: 30}} />}
+                                {item.tokenid && item.tokenid === this.props[`current_token_${type}`] && <CheckCircleOutlined theme="filled" style={{color: '#2F80ED', fontSize: 30}} />}
                             </div>
                         </div>
                     ))}

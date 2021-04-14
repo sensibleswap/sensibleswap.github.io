@@ -5,13 +5,19 @@ import CustomIcon from 'components/icon';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Button } from 'antd';
+import { Button, Form } from 'antd';
 import { DownOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import Setting from '../setting';
 import { connect } from 'umi';
 import Volt from 'lib/volt';
+import Loading from 'components/loading';
+import BigNumber from 'bignumber.js';
+import { slippage_data, feeRate } from 'common/config';
 
+const { storage_name, defaultIndex, datas } = slippage_data;
+
+const FormItem = Form.Item;
 const toAddress = "1EgWmJUAXpB9ruMg67eAkuEvjqXu9jd7iA";
 const amount = 0.1;
 
@@ -26,9 +32,12 @@ const menu = [
     // }
 ];
 
-@connect(({ user }) => {
+
+@connect(({ user, loading }) => {
+    const { effects } = loading;
     return {
-        ...user
+        ...user,
+        loading: effects['service/queryTx'] || false
     }
 
 })
@@ -39,29 +48,47 @@ export default class Swap extends Component {
             page: 'form',
             formFinish: false,
             showDetail: false,
-            bsvToToken: true,
-            bsvValue: 0,
-            tokenValue: 0,
-            origin_token: {
-                name: 'BSV',
-                icon: 'iconlogo-bitcoin'
-            },
-            aim_token: {
-                name: 'vUSD',
-                icon: 'iconlogo-vusd'
-            }
+            // origin_amount: 0,
+            // aim_amount: 0,
+            slip: 0,
+            fee: 0,
+            lastMod: ''
+            // bsvToToken: true,
 
         }
+        this.formRef = React.createRef();
     }
 
-    componentDidMount() {
 
-    }
-
-    switch = () => {
-        this.setState({
-            bsvToToken: !this.state.bsvToToken
-        })
+    switch = async () => {
+        const { dispatch, origin_token_id, aim_token_id } = this.props;
+        await dispatch({
+            type: 'user/save',
+            payload: {
+                origin_token_id: aim_token_id,
+                aim_token_id: origin_token_id
+            }
+        });
+        const { current } = this.formRef;
+        const { origin_amount, aim_amount } = current.getFieldsValue(['origin_amount', 'aim_amount']);
+        const { lastMod } = this.state;
+        if (lastMod === 'origin') {
+            current.setFieldsValue({
+                aim_amount: origin_amount
+            });
+            this.calc(0, origin_amount);
+            this.setState({
+                lastMod: 'aim'
+            })
+        } else if (lastMod === 'aim') {
+            current.setFieldsValue({
+                origin_amount: aim_amount,
+            });
+            this.calc(aim_amount, 0)
+            this.setState({
+                lastMod: 'origin'
+            })
+        }
     }
 
     showUI = (name) => {
@@ -70,90 +97,253 @@ export default class Swap extends Component {
             page: name
         })
     }
+    findToken = (id) => {
+        const { tokens } = this.props;
+        return tokens.find(v => v.tokenId === id)
+    }
 
-    renderBsv() {
-        const { bsvValue, origin_token } = this.state;
+    changeOriginAmount = (e) => {
+        const { value } = e.target;
+
+        // const { pairLiquidity } = this.props.pair_data;
+        // const aim_amount = BigNumber(value).multipliedBy(pairLiquidity[1].amount).div(pairLiquidity[0].amount).toFixed(4).toString()
+        // this.formRef.current.setFieldsValue({
+        //     aim_amount,
+        // });
+
+        if (value > 0) {
+            const fee = BigNumber(value).multipliedBy(feeRate).toFixed(2).toString();
+            this.setState({
+                fee,
+                lastMod: 'origin'
+            });
+            this.calc(value - fee);
+        } else {
+            this.formRef.current.setFieldsValue({
+                aim_amount: 0,
+            });
+            this.setState({
+                fee: 0, 
+                slip: 0,
+                lastMod: ''
+            })
+        }
+    }
+
+    changeAimAmount = (e) => {
+        const { value } = e.target;
+
+        // const { pairLiquidity } = this.props.pair_data;
+        // const origin_amount = BigNumber(value).multipliedBy(pairLiquidity[0].amount).div(pairLiquidity[1].amount).toFixed(4).toString()
+        // this.formRef.current.setFieldsValue({
+        //     origin_amount,
+        // });
+        if (value > 0) {
+            this.setState({
+                lastMod: 'aim',
+            });
+            this.calc(0, value)
+        } else {
+            this.formRef.current.setFieldsValue({
+                origin_amount: 0,
+            });
+            this.setState({
+                fee: 0, 
+                slip: 0,
+                lastMod: ''
+            })
+        }
+
+
+
+    }
+
+    renderOriginToken() {
+        const { origin_token_id } = this.props;
+        const origin_token = this.findToken(origin_token_id);
+        if (!origin_token) return <div>notoken</div>;
         return <div className={styles.box}>
             <div className={styles.coin}>
                 <TokenLogo name={origin_token.name} icon={origin_token.icon} />
-                <div className={styles.name}>{origin_token.name}</div>
+                <div className={styles.name}>{origin_token.symbol}</div>
                 <DownOutlined onClick={() => this.showUI('selectToken_origin')} />
             </div>
-            <input className={styles.input} value={bsvValue} onChange={(e) => {
-                this.setState({
-                    bsvValue: e.target.value
-                })
-            }} />
+            <FormItem
+                name={'origin_amount'}>
+                <input className={styles.input} onChange={this.changeOriginAmount} />
+            </FormItem>
         </div>
     }
 
-    renderToken() {
-        const { tokenValue, aim_token } = this.state;
+    renderAimToken() {
+        const { aim_token_id } = this.props;
+        const aim_token = this.findToken(aim_token_id);
+        if (!aim_token) return <div>notoken</div>;
         return <div className={styles.box}>
             <div className={styles.coin}>
                 <TokenLogo name={aim_token.name} icon={aim_token.icon} />
-                <div className={styles.name}>{aim_token.name}</div>
+                <div className={styles.name}>{aim_token.symbol}</div>
                 <DownOutlined onClick={() => this.showUI('selectToken_aim')} />
             </div>
-            <input className={styles.input} value={tokenValue} onChange={(e) => {
-                this.setState({
-                    tokenValue: e.target.value
-                })
-            }} />
+            <FormItem
+                name={'aim_amount'}>
+                <input className={styles.input} onChange={this.changeAimAmount} />
+            </FormItem>
         </div>
     }
 
-    renderForm() {
-        const { bsvToToken } = this.state;
-        const { balance } = this.props;
+    setOriginBalance = () => {
+        const { origin_token_id } = this.props;
+        const origin_token = this.findToken(origin_token_id);
+
+        const origin_amount = origin_token.value || 0;
+        this.formRef.current.setFieldsValue({
+            origin_amount,
+        });
+        this.calc(origin_amount, 0)
+        if (origin_amount > 0) {
+
+            this.setState({
+                // origin_amount,
+                lastMod: 'origin',
+                fee: BigNumber(origin_amount).multipliedBy(feeRate).toFixed(2).toString()
+            });
+        }
+    }
+    // setAimBalance = () => {
+    //     const { aim_token_id } = this.props;
+    //     const aim_token = this.findToken(aim_token_id);
+    //     const { pairLiquidity } = this.props.pair_data;
+
+    //     this.formRef.current.setFieldsValue({
+    //         aim_amount: aim_token.value || 0,
+    //         origin_amount: BigNumber(aim_token.value || 0).multipliedBy(pairLiquidity[0].amount).div(pairLiquidity[1].amount).toFixed(4).toString(),
+    //     });
+    //     this.setState({
+    //         origin_amount,
+    //         aim_amount
+    //     });
+    //     // this.calc()
+    // }
+
+    calc = (origin_amount = 0, aim_amount = 0) => {
+        //TODO: aim_amount不能大于池里token的数量，但交互要怎么展示
+        //TODO: origin_amount不能比手续费小
+        const { origin_token_id, aim_token_id, pair_data } = this.props;
+        const { pairLiquidity } = pair_data;
+        let amount1, amount2;
+        pairLiquidity.forEach(item => {
+            if (item.tokenid === origin_token_id) {
+                amount1 = item.amount;
+            }
+            if (item.tokenid === aim_token_id) {
+                amount2 = item.amount;
+            }
+        })
+        const total = BigNumber(amount1).multipliedBy(amount2);
+        const p = BigNumber(amount2).div(amount1);
+        let newAmount1 = amount1, newAmount2 = amount2;
+        if (origin_amount > 0) {
+            newAmount1 = BigNumber(amount1).plus(origin_amount);
+            newAmount2 = total.div(newAmount1);
+        } else if (aim_amount > 0) {
+            newAmount2 = BigNumber(amount2).minus(aim_amount);
+            newAmount1 = total.div(newAmount2);
+        }
+        const p1 = BigNumber(newAmount2).div(newAmount1);
+        const slip = (p1.minus(p)).div(p);
+
+        this.setState({
+            slip: slip.multipliedBy(100).abs().toFixed(2).toString() + '%',
+        });
+        if (origin_amount > 0) {
+            this.formRef.current.setFieldsValue({
+                aim_amount: BigNumber(amount2).minus(newAmount2).toFixed(4).toString()
+            })
+        } else if (aim_amount > 0) {
+            const v = BigNumber(newAmount1).minus(amount1).div(1 - feeRate)
+            this.formRef.current.setFieldsValue({
+                origin_amount: v.toFixed(4).toString()
+            })
+            this.setState({
+                fee: v.multipliedBy(feeRate).toFixed(2).toString()
+            })
+        } else {
+            //两个值都没有大于0
+
+        }
+
+    }
+
+    renderForm = () => {
+        const { origin_token_id, aim_token_id, pair_data } = this.props;
+        const origin_token = this.findToken(origin_token_id);
+        const aim_token = this.findToken(aim_token_id);
+        if (!origin_token) return null;
+        const { slip, fee, lastMod } = this.state;
+        const { pairLiquidity } = pair_data;
+        let price = 0;
+        let amount1, amount2;
+        if (pairLiquidity) {
+            pairLiquidity.forEach(item => {
+                if (item.tokenid === origin_token_id) {
+                    amount1 = item.amount;
+                }
+                if (item.tokenid === aim_token_id) {
+                    amount2 = item.amount;
+                }
+            })
+            price = BigNumber(amount1).div(amount2).toFixed(4).toString();
+
+        }
+        const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
+        const beyond = parseFloat(slip) > parseFloat(tol);
+
         return <div className={styles.content}>
-            <div className={styles.title}>
-                <h3>{_('you_pay')}</h3>
-                <div className={styles.balance} onClick={() => {
-                    this.setState({
-                        bsvValue: balance
-                    })
-                }}>{_('your_balance')}: <span>{balance} BSV</span></div>
-            </div>
-            {bsvToToken ? this.renderBsv() : this.renderToken()}
-
-            <div className={styles.switch_icon}>
-                <div className={styles.icon} onClick={this.switch}>
-                    <CustomIcon type='iconswitch' style={{ fontSize: 20 }} />
+            <Form onSubmit={this.handleSubmit} ref={this.formRef}>
+                <div className={styles.title}>
+                    <h3>{_('you_pay')}</h3>
+                    <div className={styles.balance} onClick={this.setOriginBalance}>{_('your_balance')}: <span>{origin_token.value || 0} {origin_token.symbol}</span></div>
                 </div>
-                <div className={styles.line}></div>
-            </div>
+                {this.renderOriginToken()}
 
-            <div className={styles.title}>
-                <h3>{_('you_receive')} <span className={styles.normal}>({_('estimated')})</span></h3></div>
+                <div className={styles.switch_icon}>
+                    <div className={styles.icon} onClick={this.switch}>
+                        <CustomIcon type='iconswitch' style={{ fontSize: 20 }} />
+                    </div>
+                    <div className={styles.line}></div>
+                </div>
 
-            {bsvToToken ? this.renderToken() : this.renderBsv()}
+                <div className={styles.title}>
+                    <h3>{_('you_receive')} <span className={styles.normal}>({_('estimated')})</span></h3></div>
 
-            <div className={styles.key_value}>
-                <div className={styles.key}>{_('price')}</div>
-                <div className={styles.value}>1 BSV = 255 vUSD </div>
-            </div>
-            <div className={styles.key_value}>
-                <div className={styles.key}>{_('slippage_tolerance')}</div>
-                <div className={styles.value}>0.5%</div>
-            </div>
-            <Button className={styles.btn} onClick={this.submit}>{_('enter_amount')}</Button>
-            <div className={styles.key_value}>
-                <div className={styles.key}>{_('minimum_received')}</div>
-                <div className={styles.value}>1989 vUSD</div>
-            </div>
-            <div className={styles.key_value}>
-                <div className={styles.key}>{_('price_impact')}</div>
-                <div className={styles.value}>0.28%</div>
-            </div>
-            <div className={styles.key_value}>
-                <div className={styles.key}>{_('fee')}</div>
-                <div className={styles.value}> 6 vUSD</div>
-            </div>
+                {this.renderAimToken()}
+
+                <div className={styles.key_value}>
+                    <div className={styles.key}>{_('price')}</div>
+                    <div className={styles.value}>1 {origin_token.symbol} = {price} {aim_token.symbol}</div>
+                </div>
+                <div className={styles.key_value}>
+                    <div className={styles.key}>{_('slippage_tolerance')}</div>
+                    <div className={styles.value}>{tol}</div>
+                </div>
+                {lastMod ? (beyond ? <Button className={styles.btn_warn} onClick={this.submit}>{_('swap_anyway')}</Button> : <Button className={styles.btn} type='primary' onClick={this.submit}>{_('swap')}</Button>) :
+                    <Button className={styles.btn_wait}>{_('enter_amount')}</Button>
+                }
+                <div className={styles.key_value}>
+                    <div className={styles.key}>{_('price_impact')}</div>
+                    <div className={styles.value} style={beyond ? { color: 'red' } : {}}>{slip}</div>
+                </div>
+                <div className={styles.key_value}>
+                    <div className={styles.key}>{_('fee')}</div>
+                    <div className={styles.value}>{fee} {origin_token.symbol}</div>
+                </div>
+            </Form>
         </div>
     }
 
     submit = async () => {
+        //TODO: 哪个环节判断登录
         const { wid } = this.props;
         // const res = await Volt.createBsvTx({
         //     amount,
@@ -162,9 +352,13 @@ export default class Swap extends Component {
 
         // });
         // console.log(res);
-        // this.setState({
-        //     formFinish: true
-        // })
+        const { current } = this.formRef;
+        const { origin_amount, aim_amount } = current.getFieldsValue(['origin_amount', 'aim_amount']);
+        this.setState({
+            formFinish: true,
+            origin_amount,
+            aim_amount
+        })
     }
 
     viewDetail = () => {
@@ -179,12 +373,15 @@ export default class Swap extends Component {
     }
 
     renderResult() {
-        const { showDetail } = this.state;
+        const { showDetail, origin_amount, aim_amount, fee } = this.state;
+        const { origin_token_id, aim_token_id, accountName } = this.props;
+        const origin_token = this.findToken(origin_token_id);
+        const aim_token = this.findToken(aim_token_id);
+
         return <div className={styles.content}>
             <div className={styles.finish_logo}>
             </div>
-            <div className={styles.finish_title}>{_('swapping_for').replace('%1', 'BSV').replace('%2', 'vUSD')}</div>
-            <div className={styles.finish_desc}>{_('time_left', '1:33')}</div>
+            <div className={styles.finish_title}>{_('swapping_for').replace('%1', origin_token.symbol).replace('%2', aim_token.symbol)}</div>
 
             {showDetail ? <div className={styles.detail}>
                 <div className={styles.detail_title}>{_('tx_details')}
@@ -197,25 +394,25 @@ export default class Swap extends Component {
                     </div>
                     <div className={styles.detail_item}>
                         <div className={styles.item_label}>{_('volt_account')}</div>
-                        <div className={styles.item_value}>My Swap Tokens</div>
+                        <div className={styles.item_value}>{accountName}</div>
                     </div>
 
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('paid')}</div>
-                    <div className={styles.item_value}>5 BSV</div>
+                    <div className={styles.item_value}>{origin_amount} {origin_token.symbol}</div>
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('received')}</div>
-                    <div className={styles.item_value}>1021.977 VUSD</div>
+                    <div className={styles.item_value}>{aim_amount} {aim_token.symbol}</div>
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('swap_fee')}</div>
-                    <div className={styles.item_value}>0.1% = $1.023</div>
+                    <div className={styles.item_value}>{fee} {origin_token.symbol}</div>
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('date')}</div>
-                    <div className={styles.item_value}>08 Aug 2020 at 10:23:15 pm</div>
+                    <div className={styles.item_value}>{}</div>
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('onchain_tx')}</div>
@@ -251,20 +448,41 @@ export default class Swap extends Component {
         </div>;
     }
 
-    selectedToken = (tokenid) => {
-        if (tokenid) {
+    selectedToken = (tokenId) => {
+        if (tokenId) {
             const { page } = this.state;
-            const { token } = this.props.wallet;
-            const _token = token.find(v => v.tokenid === tokenid);
+            const { origin_token_id, aim_token_id, dispatch } = this.props;
+            // const _token = tokens.find(v => v.tokenId === tokenId);
             if (page === 'selectToken_origin') {
 
-                this.setState({
-                    origin_token: _token
+                dispatch({
+                    type: 'user/save',
+                    payload: {
+                        origin_token_id: tokenId
+                    }
+
+                })
+                dispatch({
+                    type: 'service/queryTx',
+                    payload: {
+                        tokenids: [tokenId, aim_token_id]
+                    }
                 })
             }
             if (page === 'selectToken_aim') {
-                this.setState({
-                    aim_token: _token
+
+                dispatch({
+                    type: 'user/save',
+                    payload: {
+                        aim_token_id: tokenId
+                    }
+
+                })
+                dispatch({
+                    type: 'service/queryTx',
+                    payload: {
+                        tokenids: [origin_token_id, tokenId]
+                    }
                 })
             }
         }
@@ -273,12 +491,11 @@ export default class Swap extends Component {
 
     render() {
         const { page } = this.state;
-        if (page === 'form') {
-            return this.renderSwap()
-        } else if (page === 'selectToken_origin' || page === 'selectToken_aim') {
-            return <SelectToken close={this.selectedToken} />
-        } else if (page === 'setting') {
-            return <Setting close={() => this.showUI('form')} />
-        }
+        if (this.props.loading) return <Loading />
+        return <div style={{position: 'relative'}}>
+        {this.renderSwap()}
+        <div style={{position:'absolute',top:0,left:0,display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none'}}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>
+        <div style={{position:'absolute',top:0,left:0,display: page === 'setting' ? 'block' : 'none'}}><Setting close={() => this.showUI('form')} /></div>
+        </div>
     }
 }

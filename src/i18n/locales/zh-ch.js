@@ -161,7 +161,8 @@ const texts = {
     lb_9: '没有抢跑交易从而损害正常交易用户利益',
     lb_10: '超低费用的即时交易撮合，即时完成交易',
 
-    refresh_url: '点击刷新二维码'
+    refresh_url: '点击刷新二维码',
+    swap_anyway: '仍然交易',
 
 }
 module.exports = texts;

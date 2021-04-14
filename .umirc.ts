@@ -16,11 +16,12 @@ export default defineConfig({
     lib: '@/lib',
     i18n: '@/i18n',
     components: '@/components',
-    common: '@/common'
+    common: '@/common',
+    api: '@/api'
   },
   proxy: {
     '/api.json': {
-      target: 'http://127.0.0.1',
+      target: 'http://192.168.0.135:8888',
       changeOrigin: true,
     }
   },

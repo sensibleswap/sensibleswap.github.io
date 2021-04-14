@@ -43,8 +43,8 @@ export default class UserInfo extends Component {
 
     init = async () => {
 
-        const isOnline = await Volt.isOnline();
-        if (isOnline) {
+        const res = await Volt.isOnline();
+        if (res.code === 200) {
             //在线
             this.props.dispatch({
                 type: 'user/getWalletById',
@@ -106,7 +106,7 @@ export default class UserInfo extends Component {
 
         _loginTimer = setInterval(async () => {
 
-            const res = await Volt.userPoll();
+            const res = await Volt.isOnline();
             console.log(res);
 
             if (isLogin || !this.state.login_visible) {
@@ -184,7 +184,7 @@ export default class UserInfo extends Component {
             <div className={styles.hd}>
                 <div className={styles.left}>
                     <div>{_('connected_account')}</div>
-                    <div className={styles.account_name}>{accountName}</div>
+                    <div className={styles.account_name}><CustomIcon type='iconVolt_logo' style={{ fontSize: 14 }} /> {accountName}</div>
                 </div>
                 <div className={styles.account_icon} onClick={this.closePop}>
                     <UpOutlined />
@@ -222,7 +222,7 @@ export default class UserInfo extends Component {
                     placement='bottomRight'
                 >
                     <div className={styles.account_trigger}>
-                        {accountName}
+                    <CustomIcon type='iconVolt_logo' style={{ fontSize: 14, marginRight: 5 }} />{accountName}
                         <div className={styles.account_icon}>
                             <DownOutlined />
                         </div>

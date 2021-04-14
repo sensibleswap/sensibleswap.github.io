@@ -181,3 +181,10 @@ export function jc() {
 export const formatSat = (value, dec = 8) => {
   return BigNumber(value).div(Math.pow(10, dec)).toString();
 }
+
+
+export function sleep(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}

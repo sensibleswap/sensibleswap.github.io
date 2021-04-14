@@ -2,12 +2,12 @@
 export default [
   {
     name: 'zh-cn',
-    label: '中文',
+    label: '中',
     value: 1,
   },
   {
     name: 'en-us',
-    label: 'English',
+    label: 'EN',
     value: 2,
   },
 ];

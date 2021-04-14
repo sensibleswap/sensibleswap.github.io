@@ -3,31 +3,44 @@ import React, { Component } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import styles from './index.less';
 import _ from 'i18n';
+import { slippage_data } from 'common/config';
 
-const data =['0.1%', '0.5%', '1%', '5%'];
+const { localStorage } = window;
+
+const {storage_name, defaultIndex, datas} = slippage_data;
 
 export default class Setting extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentIndex: 0
+            currentIndex: defaultIndex
         }
     }
 
     componentDidMount() {
-        
+        let v = localStorage.getItem(storage_name);
+        if(typeof(v) === 'undefined' || v === null) {
+            localStorage.setItem(storage_name, defaultIndex)
+        } else {
+            this.setState({
+                currentIndex: v
+            })
+        }
     }
 
     switch = (index) => {
         this.setState({
             currentIndex: index
         })
+        localStorage.setItem(storage_name, index)
+        this.props.close()
     }
 
     reset = () => {
         this.setState({
-            currentIndex: 0
+            currentIndex: defaultIndex
         })
+        localStorage.setItem(storage_name, defaultIndex)
     }
 
     render() {
@@ -45,8 +58,8 @@ export default class Setting extends Component {
                 </div>
                 <div className={styles.desc}>{_('tolerance_desc')}</div>
                 <div className={styles.items}>
-                    {data.map((item, index)=> (
-                        <div className={index === currentIndex ? styles.current_item : styles.item} key={item} onClick={()=>this.switch(index)}>{item}</div>
+                    {datas.map((item, index)=> (
+                        <div className={index === parseInt(currentIndex) ? styles.current_item : styles.item} key={item} onClick={()=>this.switch(index)}>{item}</div>
                     ))}
                 </div>
             </div>
