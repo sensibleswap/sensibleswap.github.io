@@ -5,7 +5,7 @@ import CustomIcon from 'components/icon';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Button, Form } from 'antd';
+import { Button, Form, InputNumber } from 'antd';
 import { DownOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import Setting from '../setting';
@@ -102,14 +102,7 @@ export default class Swap extends Component {
         return tokens.find(v => v.tokenId === id)
     }
 
-    changeOriginAmount = (e) => {
-        const { value } = e.target;
-
-        // const { pairLiquidity } = this.props.pair_data;
-        // const aim_amount = BigNumber(value).multipliedBy(pairLiquidity[1].amount).div(pairLiquidity[0].amount).toFixed(4).toString()
-        // this.formRef.current.setFieldsValue({
-        //     aim_amount,
-        // });
+    changeOriginAmount = (value) => {
 
         if (value > 0) {
             const fee = BigNumber(value).multipliedBy(feeRate).toFixed(2).toString();
@@ -123,21 +116,14 @@ export default class Swap extends Component {
                 aim_amount: 0,
             });
             this.setState({
-                fee: 0, 
+                fee: 0,
                 slip: 0,
                 lastMod: ''
             })
         }
     }
 
-    changeAimAmount = (e) => {
-        const { value } = e.target;
-
-        // const { pairLiquidity } = this.props.pair_data;
-        // const origin_amount = BigNumber(value).multipliedBy(pairLiquidity[0].amount).div(pairLiquidity[1].amount).toFixed(4).toString()
-        // this.formRef.current.setFieldsValue({
-        //     origin_amount,
-        // });
+    changeAimAmount = (value) => {
         if (value > 0) {
             this.setState({
                 lastMod: 'aim',
@@ -148,7 +134,7 @@ export default class Swap extends Component {
                 origin_amount: 0,
             });
             this.setState({
-                fee: 0, 
+                fee: 0,
                 slip: 0,
                 lastMod: ''
             })
@@ -170,7 +156,7 @@ export default class Swap extends Component {
             </div>
             <FormItem
                 name={'origin_amount'}>
-                <input className={styles.input} onChange={this.changeOriginAmount} />
+                <InputNumber className={styles.input} onChange={this.changeOriginAmount} min='0' />
             </FormItem>
         </div>
     }
@@ -187,7 +173,7 @@ export default class Swap extends Component {
             </div>
             <FormItem
                 name={'aim_amount'}>
-                <input className={styles.input} onChange={this.changeAimAmount} />
+                <InputNumber className={styles.input} type='number' onChange={this.changeAimAmount} min='0' />
             </FormItem>
         </div>
     }
@@ -412,7 +398,7 @@ export default class Swap extends Component {
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('date')}</div>
-                    <div className={styles.item_value}>{}</div>
+                    <div className={styles.item_value}>{ }</div>
                 </div>
                 <div className={styles.detail_item}>
                     <div className={styles.item_label}>{_('onchain_tx')}</div>
@@ -492,10 +478,10 @@ export default class Swap extends Component {
     render() {
         const { page } = this.state;
         if (this.props.loading) return <Loading />
-        return <div style={{position: 'relative'}}>
-        {this.renderSwap()}
-        <div style={{position:'absolute',top:0,left:0,display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none'}}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>
-        <div style={{position:'absolute',top:0,left:0,display: page === 'setting' ? 'block' : 'none'}}><Setting close={() => this.showUI('form')} /></div>
+        return <div style={{ position: 'relative' }}>
+            {this.renderSwap()}
+            <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none' }}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>
+            <div style={{ position: 'absolute', top: 0, left: 0, display: page === 'setting' ? 'block' : 'none' }}><Setting close={() => this.showUI('form')} /></div>
         </div>
     }
 }

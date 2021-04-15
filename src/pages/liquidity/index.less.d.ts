@@ -4,6 +4,8 @@ interface CssExports {
   'balance': string;
   'box': string;
   'btn': string;
+  'btn_wait': string;
+  'btn_warn': string;
   'coin': string;
   'container': string;
   'content': string;

@@ -57,8 +57,8 @@ export default {
     wallet: {},
     tokens: [],
     origin_token_id: 'BSV',
-    aim_token_id: 'bf19e24d4e1a640be3925aa26ce9fbf38cbb7bb2',
-    reverse: false,
+    aim_token_id: '',
+    // reverse: false,
 
     // origin_token_id: '8188eefde21026e50814f75990df017fdaf8f1c5',
     // aim_token_id: '42d478002d33cc4ce381e9fe8d83a57d0ea55f96',

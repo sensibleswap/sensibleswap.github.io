@@ -163,6 +163,9 @@ const texts = {
 
     refresh_url: '点击刷新二维码',
     swap_anyway: '仍然交易',
+    select: '选择',
+    first_liq_er: 'You are the first liquidity provider.',
+    first_liq_er_desc: 'The ratio of tokens you add will set the price of this pool. Once you are happy with the rate click supply to review.'
 
 }
 module.exports = texts;

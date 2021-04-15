@@ -1,5 +1,6 @@
 'use strict';
 import React from 'react';
+import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
 
@@ -31,7 +32,7 @@ export default function PairStat(props) {
         <div className={styles.item}>
             <div className={styles.label}>{_('pooled_tokens')}</div>
             {pooledTokens.map(item => (
-                <div className={styles.value2} key={item.tokenid}>{item.amount} {item.symbol}</div>
+                <div className={styles.value2} key={item.tokenid}><TokenLogo name={item.name} icon={item.icon} /> {item.amount} {item.symbol}</div>
             ))}
         
         </div>

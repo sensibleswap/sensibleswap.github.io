@@ -5,7 +5,6 @@ import _ from 'i18n';
 import { Button, Popover, Modal, Select } from 'antd';
 import { UpOutlined, SwapOutlined, UserOutlined, DownOutlined, CheckOutlined, LoadingOutlined } from '@ant-design/icons';
 import CustomIcon from 'components/icon';
-import { formatSat } from 'common/utils';
 import { withRouter, connect } from 'umi';
 import Login from '../login';
 import Volt from 'lib/volt';

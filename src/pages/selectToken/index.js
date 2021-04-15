@@ -28,10 +28,7 @@ export default class SelectToken extends Component {
     //     const {tokens} = this.props;
 
     //     this.setState({
-    //         showList: [
-    //             bsvItem,
-    //             ...token
-    //         ],
+    //         showList: tokens,
     //     })
     // }
 

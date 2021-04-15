@@ -163,6 +163,9 @@ const texts = {
     
     refresh_url: 'Click Refresh QR Code',
     swap_anyway: 'Swap Anyway',
+    select: 'Select',
+    first_liq_er: 'You are the first liquidity provider.',
+    first_liq_er_desc: 'The ratio of tokens you add will set the price of this pool. Once you are happy with the rate click supply to review.'
 
 
 }

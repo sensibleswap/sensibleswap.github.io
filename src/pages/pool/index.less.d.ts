@@ -4,6 +4,8 @@ interface CssExports {
   'box': string;
   'container': string;
   'desc': string;
+  'first': string;
+  'first_title': string;
   'left': string;
   'left_inner': string;
   'link': string;
