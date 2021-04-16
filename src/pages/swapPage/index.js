@@ -10,14 +10,10 @@ import HeadLeft from '../layout/head/headLeft';
 import HeadRight from '../layout/head/headRight';
 import Swap from '../swap';
 import PairStat from '../pairStat';
+import PairIntro from '../pairIntro';
 import { connect } from 'umi';
-import Cookie from 'js-cookie';
 import BigNumber from 'bignumber.js';
 
-import walletApi from 'api/wallet';
-
-const lang = Cookie.get('lang') || navigator.language;
-const isZh = lang.toLowerCase() === 'zh-cn';
 
 
 @connect(({ service, user, loading }) => {
@@ -87,16 +83,7 @@ export default class SwapPage extends Component {
                 <div className={styles.subtitle}><span className={styles.strong}>{price}</span> {aim_token.symbol} {_('per')} {origin_token.symbol} </div>
             </div>
             <Chart />
-            {pair_data.detail.length > 0 && pair_data.detail.map((item, index) => {
-                const {name, des_en, des_zh, web_url, id} = item;
-                return <div key={id || index}>
-                    <h3 className={styles.title}>{_('about')} {name}</h3>
-                    <div className={styles.p}>
-                        <p className={styles.desc}>{isZh ? des_zh : des_en}</p>
-                        {web_url && <div className={styles.link}><a href={web_url} target='_blank'>{_('website')}</a></div>}
-                    </div>
-                </div>
-            })}
+            <PairIntro data={pair_data.detail} />
 
             <h3 className={styles.title}>{origin_token.symbol}/{aim_token.symbol} {_('transactions')}</h3>
             <Transactions />

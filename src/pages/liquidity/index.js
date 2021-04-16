@@ -4,10 +4,13 @@ import { jc } from 'common/utils';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Steps, Button, Form, InputNumber, Spin } from 'antd';
+import { Steps, Button, Form, InputNumber, Spin, message } from 'antd';
 import { QuestionCircleOutlined, DownOutlined, PlusOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import { withRouter, connect } from 'umi';
+import BigNumber from 'bignumber.js';
+import { formatAmount } from 'common/utils';
+import EventBus from 'common/eventBus';
 
 const { Step } = Steps;
 const FormItem = Form.Item;
@@ -48,7 +51,7 @@ export default class Liquidity extends Component {
     }
 
     componentDidMount() {
-        const {origin_token_id, aim_token_id} = this.props;
+        const { origin_token_id, aim_token_id } = this.props;
         if (origin_token_id && aim_token_id) {
             this.setState({
                 currentStep: 1
@@ -59,15 +62,42 @@ export default class Liquidity extends Component {
 
 
     changeOriginAmount = (value) => {
+
+        const { pairLiquidity } = this.props.pair_data;
+
         this.setState({
-            origin_amount: value
+            origin_amount: value,
+        });
+        if (!pairLiquidity) return;
+        const origin_amount = pairLiquidity[0].amount;
+        const aim_amount = pairLiquidity[1].amount;
+        const user_aim_amount = formatAmount(BigNumber(value).multipliedBy(aim_amount).div(origin_amount).toNumber());
+
+        this.formRef.current.setFieldsValue({
+            aim_amount: user_aim_amount,
+        });
+        this.setState({
+            aim_amount: user_aim_amount,
         });
     }
 
     changeAimAmount = (value) => {
 
+        const { pairLiquidity } = this.props.pair_data;
+
         this.setState({
-            aim_amount: value
+            aim_amount: value,
+        });
+        if (!pairLiquidity) return;
+        const origin_amount = pairLiquidity[0].amount;
+        const aim_amount = pairLiquidity[1].amount;
+        const user_origin_amount = formatAmount(BigNumber(value).multipliedBy(origin_amount).div(aim_amount).toNumber());
+
+        this.formRef.current.setFieldsValue({
+            origin_amount: user_origin_amount,
+        });
+        this.setState({
+            origin_amount: user_origin_amount
         });
 
 
@@ -95,14 +125,16 @@ export default class Liquidity extends Component {
         const { origin_token_id, aim_token_id, pair_data } = this.props;
         const origin_token = this.findToken(origin_token_id) || {};
         const aim_token = this.findToken(aim_token_id) || {};
-        let { origin_amount, aim_amount  } = this.state;
+        const { origin_amount = 0, aim_amount = 0 } = this.state;
+        let total_origin_amount = origin_amount, total_aim_amount = aim_amount;
         pair_data.pairLiquidity && pair_data.pairLiquidity.forEach(item => {
             if (item.tokenid === origin_token_id) {
-                origin_amount = origin_amount + item.amount;
+                total_origin_amount = formatAmount(BigNumber(origin_amount).plus(item.amount)).toString();
             } else if (item.tokenid === aim_token_id) {
-                aim_amount = aim_amount + item.amount;
+                total_aim_amount = formatAmount(BigNumber(aim_amount).plus(item.amount)).toString();
             }
-        })
+        });
+        const share = origin_amount > 0 ? formatAmount(BigNumber(origin_amount).div(total_origin_amount).multipliedBy(100), 2).toString() : 0
         return <div className={styles.my_pair_info}>
             <div className={styles.info_title_swap}>
                 <div className={styles.info_title}>{_('pool_share')}</div>
@@ -111,27 +143,28 @@ export default class Liquidity extends Component {
 
             <div className={styles.info_item}>
                 <div className={styles.info_label}>{_('pooled')} {origin_token.symbol}</div>
-                <div className={styles.info_value}>{origin_amount}</div>
+                <div className={styles.info_value}>{total_origin_amount}</div>
             </div>
             <div className={styles.info_item}>
                 <div className={styles.info_label}>{_('pooled')} {aim_token.symbol}</div>
-                <div className={styles.info_value}>{aim_amount}</div>
+                <div className={styles.info_value}>{total_aim_amount}</div>
             </div>
             <div className={styles.info_item}>
                 <div className={styles.info_label}>{_('your_share')}</div>
-                <div className={styles.info_value}>0.0%</div>
+                <div className={styles.info_value}>{share}%</div>
             </div>
         </div>
     }
 
     findToken = (id) => {
         const { tokens } = this.props;
-        return tokens.find(v => v.tokenId === id)
+        const token = tokens.find(v => v.tokenId === id);
+        if (token) {
+            token.symbol = token.symbol.toUpperCase()
+        }
+        return token;
     }
 
-    handleSubmit = () => {
-
-    }
     renderForm() {
         const { origin_token_id, aim_token_id, loading } = this.props;
         const origin_token = this.findToken(origin_token_id);
@@ -153,7 +186,8 @@ export default class Liquidity extends Component {
                         </div>
                         <FormItem
                             name={'origin_amount'}>
-                            <InputNumber className={styles.input} onChange={this.changeOriginAmount} min='0' />
+                            <InputNumber className={styles.input} onChange={this.changeOriginAmount} min='0'
+                            formatter={value => parseFloat(value || 0)} />
                         </FormItem>
                     </div>
 
@@ -175,7 +209,8 @@ export default class Liquidity extends Component {
                         </div>
                         <FormItem
                             name={'aim_amount'}>
-                            <InputNumber className={styles.input} onChange={this.changeAimAmount} min='0' />
+                            <InputNumber className={styles.input} onChange={this.changeAimAmount} min='0'
+                            formatter={value => parseFloat(value || 0)} />
                         </FormItem>
                     </div>
                     {this.renderButton()}
@@ -184,23 +219,40 @@ export default class Liquidity extends Component {
         </div>
     }
 
-    renderButton = () => {
-        const { origin_token_id, aim_token_id } = this.props;
-        const { origin_amount, aim_amount  } = this.state;
-        if (origin_token_id && aim_token_id) {
+    login() {
+        EventBus.emit('login')
+    }
 
+
+    renderButton = () => {
+        const { origin_token_id, aim_token_id, isLogin } = this.props;
+        const { origin_amount, aim_amount } = this.state;
+        const origin_token = this.findToken(origin_token_id);
+        const aim_token = this.findToken(aim_token_id) || {};
+        if (!isLogin) {
+            // 未登录
+            return <Button className={styles.btn_wait} onClick={this.login}>{_('login')}</Button>
+        } else if (!origin_token_id || !aim_token_id) {
+            //未选择Token
+            return <Button className={styles.btn_wait}>{_('select_a_token_pair')}</Button>
+        } else if (parseFloat(origin_amount) <= 0 || parseFloat(aim_amount) <= 0) {
+            // 未输入数量
+            return <Button className={styles.btn_wait}>{_('enter_amount')}</Button>;
+        } else if (parseFloat(origin_amount) > parseFloat(origin_token.value || 0)){
+            // 余额不足
+            return <Button className={styles.btn_wait}>{_('lac_token_balance', origin_token.symbol)}</Button>
+        } else if (parseFloat(aim_amount) > parseFloat(aim_token.value || 0)) {
+            // 余额不足
+            return <Button className={styles.btn_wait}>{_('lac_token_balance', aim_token.symbol)}</Button>
+        } else {
             return <>
                 {this.renderInfo()}
-                {(origin_amount > 0 || aim_amount > 0) ? <Button className={styles.btn} type='primary' onClick={this.submit}>{_('supply_liq')}</Button> :
-                    <Button className={styles.btn_wait}>{_('enter_amount')}</Button>}
+                <Button className={styles.btn} type='primary' onClick={this.handleSubmit}>{_('supply_liq')}</Button>
             </>;
-        }
-        else {
-            return <Button className={styles.btn_wait}>{_('select_a_token_pair')}</Button>
         }
     }
 
-    submit = () => {
+    handleSubmit = () => {
         this.setState({
             currentStep: 2,
             formFinish: true
@@ -227,18 +279,18 @@ export default class Liquidity extends Component {
         </div>
     }
 
-    gotoPage = (index) => {
-        this.setState({
-            currentMenuItem: index
-        })
-    }
+    // gotoPage = (index) => {
+    //     this.setState({
+    //         currentMenuItem: index
+    //     })
+    // }
 
 
     renderSwap() {
 
         const { formFinish, currentMenuItem, page } = this.state;
 
-        return <div className={styles.container} style={{display: page === 'form' ? 'block' : 'none'}}>
+        return <div className={styles.container} style={{ display: page === 'form' ? 'block' : 'none' }}>
             <div className={styles.head}>
                 <div className={styles.menu}>
                     {menu.map(item => {
@@ -246,7 +298,7 @@ export default class Liquidity extends Component {
                         if (item.key === currentMenuItem) {
                             cls = jc(styles.menu_item, styles.menu_item_selected);
                         }
-                        return <span className={cls} onClick={() => this.gotoPage(item.key)} key={item.key}>{item.label}</span>
+                        return <span className={cls} key={item.key}>{item.label}</span>
                     })}
                 </div>
                 <div className={styles.help}>
@@ -260,6 +312,7 @@ export default class Liquidity extends Component {
 
     selectedToken = async (tokenId) => {
 
+        this.showUI('form');
         if (tokenId) {
             const { page } = this.state;
             const { origin_token_id, aim_token_id, dispatch } = this.props;
@@ -300,10 +353,13 @@ export default class Liquidity extends Component {
 
             this.setState({
                 currentMenuItem: menu[res.data.pairLiquidity ? 0 : 1].key,
-                currentStep: 1
-            })
+                currentStep: 1,
+                origin_amount: 0,
+                aim_amount: 0
+            });
+
+            this.formRef.current.setFieldsValue({ origin_amount: 0, aim_amount: 0 });
         }
-        this.showUI('form');
     }
 
     render() {

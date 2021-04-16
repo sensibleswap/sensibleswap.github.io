@@ -165,7 +165,18 @@ const texts = {
     swap_anyway: '仍然交易',
     select: '选择',
     first_liq_er: 'You are the first liquidity provider.',
-    first_liq_er_desc: 'The ratio of tokens you add will set the price of this pool. Once you are happy with the rate click supply to review.'
+    first_liq_er_desc: 'The ratio of tokens you add will set the price of this pool. Once you are happy with the rate click supply to review.',
+    login: '登录',
+    lac_balance: '余额不足',
+    lac_token_balance: '%s 余额不足',
+    no_pair: '没有该交易对',
+    not_enough: '币不足',
+
+    create_pair_tips: 'Understanding Impermanent Loss',
+    create_pair_desc: 'Before becoming a Liquidity Provider, please understand the risks involved with Impermanent Loss. You can learn more about it  here.',
+    create_pair_rewards: 'Liquidity Provider Rewards',
+    create_pair_rewords_desc1: 'Liquidity Providers earn a 0.35% fee',
+    create_pair_rewords_desc2: 'on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.'
 
 }
 module.exports = texts;

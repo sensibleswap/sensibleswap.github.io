@@ -14,6 +14,8 @@ import Volt from 'lib/volt';
 import Loading from 'components/loading';
 import BigNumber from 'bignumber.js';
 import { slippage_data, feeRate } from 'common/config';
+import EventBus from 'common/eventBus';
+import { formatAmount } from 'common/utils';
 
 const { storage_name, defaultIndex, datas } = slippage_data;
 
@@ -47,9 +49,9 @@ export default class Swap extends Component {
         this.state = {
             page: 'form',
             formFinish: false,
-            showDetail: false,
-            // origin_amount: 0,
-            // aim_amount: 0,
+            showDetail: true,
+            origin_amount: 0,
+            aim_amount: 0,
             slip: 0,
             fee: 0,
             lastMod: ''
@@ -78,7 +80,8 @@ export default class Swap extends Component {
             });
             this.calc(0, origin_amount);
             this.setState({
-                lastMod: 'aim'
+                lastMod: 'aim',
+                aim_amount: origin_amount
             })
         } else if (lastMod === 'aim') {
             current.setFieldsValue({
@@ -86,7 +89,8 @@ export default class Swap extends Component {
             });
             this.calc(aim_amount, 0)
             this.setState({
-                lastMod: 'origin'
+                lastMod: 'origin',
+                origin_amount: aim_amount,
             })
         }
     }
@@ -107,6 +111,7 @@ export default class Swap extends Component {
         if (value > 0) {
             const fee = BigNumber(value).multipliedBy(feeRate).toFixed(2).toString();
             this.setState({
+                origin_amount: value,
                 fee,
                 lastMod: 'origin'
             });
@@ -118,7 +123,8 @@ export default class Swap extends Component {
             this.setState({
                 fee: 0,
                 slip: 0,
-                lastMod: ''
+                lastMod: '',
+                aim_amount: 0,
             })
         }
     }
@@ -126,6 +132,7 @@ export default class Swap extends Component {
     changeAimAmount = (value) => {
         if (value > 0) {
             this.setState({
+                aim_amount: value,
                 lastMod: 'aim',
             });
             this.calc(0, value)
@@ -136,7 +143,8 @@ export default class Swap extends Component {
             this.setState({
                 fee: 0,
                 slip: 0,
-                lastMod: ''
+                lastMod: '',
+                origin_amount: 0,
             })
         }
 
@@ -156,24 +164,38 @@ export default class Swap extends Component {
             </div>
             <FormItem
                 name={'origin_amount'}>
-                <InputNumber className={styles.input} onChange={this.changeOriginAmount} min='0' />
+                <InputNumber 
+                    className={styles.input} 
+                    onChange={this.changeOriginAmount} 
+                    onPressEnter={this.changeOriginAmount} 
+                    formatter={value => parseFloat(value || 0)}
+                    min='0' 
+                />
             </FormItem>
         </div>
     }
 
     renderAimToken() {
-        const { aim_token_id } = this.props;
+        const { aim_token_id, pair_data } = this.props;
         const aim_token = this.findToken(aim_token_id);
         if (!aim_token) return <div>notoken</div>;
         return <div className={styles.box}>
             <div className={styles.coin}>
-                <TokenLogo name={aim_token.name} icon={aim_token.icon} />
-                <div className={styles.name}>{aim_token.symbol}</div>
+            <div style={{ width: 40 }}>{aim_token.name && <TokenLogo name={aim_token.name} icon={aim_token.icon} />}</div>
+                <div className={styles.name}>{aim_token.symbol || _('select')}</div>
                 <DownOutlined onClick={() => this.showUI('selectToken_aim')} />
             </div>
             <FormItem
                 name={'aim_amount'}>
-                <InputNumber className={styles.input} type='number' onChange={this.changeAimAmount} min='0' />
+                <InputNumber 
+                    className={styles.input} 
+                    type='number' 
+                    onChange={this.changeAimAmount} 
+                    onPressEnter={this.changeAimAmount} 
+                    formatter={value => parseFloat(value || 0)}
+                    min='0' 
+                    max={Math.floor(pair_data.pairLiquidity ? pair_data.pairLiquidity[1].amount : 0)}
+                 />
             </FormItem>
         </div>
     }
@@ -186,6 +208,9 @@ export default class Swap extends Component {
         this.formRef.current.setFieldsValue({
             origin_amount,
         });
+        this.setState({
+            origin_amount
+        })
         this.calc(origin_amount, 0)
         if (origin_amount > 0) {
 
@@ -194,6 +219,10 @@ export default class Swap extends Component {
                 lastMod: 'origin',
                 fee: BigNumber(origin_amount).multipliedBy(feeRate).toFixed(2).toString()
             });
+        } else {
+            this.setState({
+                lastMod: ''
+            })
         }
     }
     // setAimBalance = () => {
@@ -227,35 +256,48 @@ export default class Swap extends Component {
             }
         })
         const total = BigNumber(amount1).multipliedBy(amount2);
-        const p = BigNumber(amount2).div(amount1);
+        const p = BigNumber(amount2).dividedBy(amount1);
         let newAmount1 = amount1, newAmount2 = amount2;
         if (origin_amount > 0) {
             newAmount1 = BigNumber(amount1).plus(origin_amount);
-            newAmount2 = total.div(newAmount1);
+            newAmount2 = total.dividedBy(newAmount1);
         } else if (aim_amount > 0) {
             newAmount2 = BigNumber(amount2).minus(aim_amount);
-            newAmount1 = total.div(newAmount2);
+            newAmount1 = total.dividedBy(newAmount2);
         }
-        const p1 = BigNumber(newAmount2).div(newAmount1);
-        const slip = (p1.minus(p)).div(p);
+        const p1 = BigNumber(newAmount2).dividedBy(newAmount1);
+        const slip = (p1.minus(p)).dividedBy(p);
 
         this.setState({
             slip: slip.multipliedBy(100).abs().toFixed(2).toString() + '%',
         });
         if (origin_amount > 0) {
+            const v_aim = formatAmount(BigNumber(amount2).minus(newAmount2))
             this.formRef.current.setFieldsValue({
-                aim_amount: BigNumber(amount2).minus(newAmount2).toFixed(4).toString()
-            })
-        } else if (aim_amount > 0) {
-            const v = BigNumber(newAmount1).minus(amount1).div(1 - feeRate)
-            this.formRef.current.setFieldsValue({
-                origin_amount: v.toFixed(4).toString()
+                aim_amount: v_aim
             })
             this.setState({
-                fee: v.multipliedBy(feeRate).toFixed(2).toString()
+                aim_amount: v_aim
+            })
+        } else if (aim_amount > 0) {
+            let v_origin = BigNumber(newAmount1).minus(amount1).dividedBy(1 - feeRate);
+            this.formRef.current.setFieldsValue({
+                origin_amount: formatAmount(v_origin)
+            });
+            this.setState({
+                fee: formatAmount(v_origin.multipliedBy(feeRate), 2),
+                origin_amount: formatAmount(v_origin)
             })
         } else {
             //两个值都没有大于0
+            this.formRef.current.setFieldsValue({
+                origin_amount,
+                aim_amount
+            });
+            this.setState({
+                origin_amount,
+                aim_amount
+            })
 
         }
 
@@ -264,7 +306,7 @@ export default class Swap extends Component {
     renderForm = () => {
         const { origin_token_id, aim_token_id, pair_data } = this.props;
         const origin_token = this.findToken(origin_token_id);
-        const aim_token = this.findToken(aim_token_id);
+        const aim_token = this.findToken(aim_token_id) || {};
         if (!origin_token) return null;
         const { slip, fee, lastMod } = this.state;
         const { pairLiquidity } = pair_data;
@@ -279,7 +321,7 @@ export default class Swap extends Component {
                     amount2 = item.amount;
                 }
             })
-            price = BigNumber(amount1).div(amount2).toFixed(4).toString();
+            price = BigNumber(amount1).dividedBy(amount2).toFixed(4).toString();
 
         }
         const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
@@ -313,9 +355,7 @@ export default class Swap extends Component {
                     <div className={styles.key}>{_('slippage_tolerance')}</div>
                     <div className={styles.value}>{tol}</div>
                 </div>
-                {lastMod ? (beyond ? <Button className={styles.btn_warn} onClick={this.submit}>{_('swap_anyway')}</Button> : <Button className={styles.btn} type='primary' onClick={this.submit}>{_('swap')}</Button>) :
-                    <Button className={styles.btn_wait}>{_('enter_amount')}</Button>
-                }
+                {this.renderButton()}
                 <div className={styles.key_value}>
                     <div className={styles.key}>{_('price_impact')}</div>
                     <div className={styles.value} style={beyond ? { color: 'red' } : {}}>{slip}</div>
@@ -328,16 +368,42 @@ export default class Swap extends Component {
         </div>
     }
 
-    submit = async () => {
-        //TODO: 哪个环节判断登录
-        const { wid } = this.props;
-        // const res = await Volt.createBsvTx({
-        //     amount,
-        //     toAddress,
-        //     wid
+    login() {
+        EventBus.emit('login')
+    }
 
-        // });
-        // console.log(res);
+    renderButton() {
+        const { isLogin, origin_token_id, pair_data } = this.props;
+        const { slip, lastMod, origin_amount, aim_amount  } = this.state;
+        const origin_token = this.findToken(origin_token_id);
+
+        const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
+        const beyond = parseFloat(slip) > parseFloat(tol);
+        if (!isLogin) {
+            // 未登录
+            return <Button className={styles.btn_wait} onClick={this.login}>{_('login')}</Button>
+        } else if (!pair_data.pairLiquidity) {
+            // 不存在的交易对
+            return <Button className={styles.btn_wait}>{_('no_pair')}</Button>
+        } else if (!lastMod) {
+            // 未输入数量
+            return <Button className={styles.btn_wait}>{_('enter_amount')}</Button>
+        } else if (parseFloat(origin_amount) > parseFloat(origin_token.value || 0)) {
+            // 余额不足
+            return <Button className={styles.btn_wait}>{_('lac_balance')}</Button>
+        } else if (parseFloat(aim_amount) > pair_data.pairLiquidity[1].amount) {
+            // 池中币不足
+            return <Button className={styles.btn_wait}>{_('not_enough')}</Button>
+        } else if (beyond) {
+            // 超出容忍度
+            return <Button className={styles.btn_warn} onClick={this.submit}>{_('swap_anyway')}</Button>
+        } else {
+            return <Button className={styles.btn} type='primary' onClick={this.submit}>{_('swap')}</Button>
+        }
+
+    }
+
+    submit = async () => {
         const { current } = this.formRef;
         const { origin_amount, aim_amount } = current.getFieldsValue(['origin_amount', 'aim_amount']);
         this.setState({
@@ -371,7 +437,7 @@ export default class Swap extends Component {
 
             {showDetail ? <div className={styles.detail}>
                 <div className={styles.detail_title}>{_('tx_details')}
-                    <span className={styles.detail_close}><CloseOutlined onClick={this.closeDetail} /></span>
+                    {/*<span className={styles.detail_close}><CloseOutlined onClick={this.closeDetail} /></span>*/}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div className={styles.detail_item}>

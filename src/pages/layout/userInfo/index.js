@@ -8,6 +8,7 @@ import CustomIcon from 'components/icon';
 import { withRouter, connect } from 'umi';
 import Login from '../login';
 import Volt from 'lib/volt';
+import EventBus from 'common/eventBus';
 
 
 
@@ -36,7 +37,8 @@ export default class UserInfo extends Component {
 
     componentDidMount() {
 
-        this.init()
+        this.init();
+        EventBus.on('login', this.login)
 
     }
 

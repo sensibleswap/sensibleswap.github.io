@@ -32,7 +32,7 @@ export default function PairStat(props) {
         <div className={styles.item}>
             <div className={styles.label}>{_('pooled_tokens')}</div>
             {pooledTokens.map(item => (
-                <div className={styles.value2} key={item.tokenid}><TokenLogo name={item.name} icon={item.icon} /> {item.amount} {item.symbol}</div>
+                <div className={styles.value2} key={item.tokenid}><TokenLogo name={item.symbol} icon={item.icon} style={{fontSize: 20,width: 30, height: 30, lineHeight: '30px'}} /> {item.amount} {item.symbol.toUpperCase()}</div>
             ))}
         
         </div>
