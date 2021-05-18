@@ -8,7 +8,7 @@ import CustomIcon from 'components/icon';
 import { withRouter, connect } from 'umi';
 import Login from '../login';
 import Volt from 'lib/volt';
-import EventBus from 'common/eventBus';
+// import EventBus from 'common/eventBus';
 
 
 
@@ -36,23 +36,31 @@ export default class UserInfo extends Component {
     }
 
     componentDidMount() {
-
-        this.init();
-        EventBus.on('login', this.login)
+        // setTimeout(()=>{
+        //     this.init();
+        // }, 1000)
+        // EventBus.on('login', this.login)
 
     }
 
     init = async () => {
 
         const res = await Volt.isOnline();
-        if (res.code === 200) {
-            //在线
-            this.props.dispatch({
-                type: 'user/getWalletById',
-                payload: {}
-            })
-
-        } 
+        debugger
+        //   if (res) {
+        //     const res = await Volt.getWalletById();
+        //     // console.log(res);
+        //     if (res.code !== 200) return;
+        //     const wallet = res.data;
+        //     await this.props.dispatch({
+        //       type: 'user/saveWalletData',
+        //       payload: {
+        //         isLogin: true,
+        //         accountName: wallet.paymail || wallet.name,
+        //         wallet: wallet,
+        //       },
+        //     });
+        //   }
     }
 
     closePop = () => {
@@ -73,7 +81,7 @@ export default class UserInfo extends Component {
         })
         const { wid } = this.props;
         // const res = await Volt.getWalletList();
-        console.log(res)
+        // console.log(res)
         if (!Array.isArray(res)) return;
         const list = res.filter(v => v.tokenid === 1);
         let current_index = list.findIndex(v => parseInt(v.id) === parseInt(wid));
@@ -95,54 +103,72 @@ export default class UserInfo extends Component {
     handleVisibleChange = visible => {
         this.setState({ pop_visible: visible });
     };
+    login = async () => {
+        const res = await Volt.login();
+        if (res) {
+            const res = await Volt.getWalletDetail();
+            // console.log(res);
+            if (res.code !== 200) return;
+            const wallet = res.data;
+            await this.props.dispatch({
+                type: 'user/saveWalletData',
+                payload: {
+                    isLogin: true,
+                    accountName: wallet.paymail || wallet.name,
+                    wallet: wallet,
+                },
+            });
+        }
+    }
 
     // 打开登录对话框
-    login = () => {
-        this.setState({
-            login_visible: true,
-            pop_visible: false,
-            dialog_visible: false
-        });
-        const { isLogin } = this.props;
+    // login1 = () => {
+    //     this.setState({
+    //         login_visible: true,
+    //         pop_visible: false,
+    //         dialog_visible: false
+    //     });
+    //     const { isLogin } = this.props;
 
-        _loginTimer = setInterval(async () => {
+    //     _loginTimer = setInterval(async () => {
 
-            const res = await Volt.isOnline();
-            console.log(res);
+    //         const res = await Volt.isOnline();
+    //         console.log(res);
 
-            if (isLogin || !this.state.login_visible) {
-                clearInterval(_loginTimer);
-            }
-            // 登录成功后
-            if (res.data.wid) {
+    //         if (isLogin || !this.state.login_visible) {
+    //             clearInterval(_loginTimer);
+    //         }
+    //         // 登录成功后
+    //         if (res.data.wid) {
 
-                this.setState({
-                    login_visible: false,
-                })
-                await this.props.dispatch({
-                    type: 'user/getWalletById',
-                    payload: {
-                        wid: res.wid
-                    }
-                })
+    //             this.setState({
+    //                 login_visible: false,
+    //             })
+    //             await this.props.dispatch({
+    //                 type: 'user/getWalletById',
+    //                 payload: {
+    //                     wid: res.wid
+    //                 }
+    //             })
 
-                clearInterval(_loginTimer);
-            }
-            // }
-        }, 500);
-    }
+    //             clearInterval(_loginTimer);
+    //         }
+    //         // }
+    //     }, 500);
+    // }
 
-    closeLogin = () => {
+    // closeLogin = () => {
 
 
-        this.setState({
-            login_visible: false,
-        });
-        clearInterval(_loginTimer);
-    }
+    //     this.setState({
+    //         login_visible: false,
+    //     });
+    //     clearInterval(_loginTimer);
+    // }
 
     disConnect = async () => {
         const res = await Volt.logout();
+        console.log(res)
         if (res) {
             this.setState({
                 login_visible: false,
@@ -223,7 +249,7 @@ export default class UserInfo extends Component {
                     placement='bottomRight'
                 >
                     <div className={styles.account_trigger}>
-                    <CustomIcon type='iconVolt_logo' style={{ fontSize: 14, marginRight: 5 }} />{accountName}
+                        <CustomIcon type='iconVolt_logo' style={{ fontSize: 14, marginRight: 5 }} />{accountName}
                         <div className={styles.account_icon}>
                             <DownOutlined />
                         </div>
@@ -264,17 +290,9 @@ export default class UserInfo extends Component {
             : <>
 
                 {connecting ? <div className={styles.connect}><LoadingOutlined /></div> : <div className={styles.connect} onClick={this.login}>{_('connect_wallet')}</div>}
-                <Modal
-                    title=""
-                    visible={login_visible}
-                    footer={null}
-                    className={styles.login_dialog}
-                    width="820px"
-                    maskClosable={true}
-                    closeable={false}
-                    onCancel={this.closeLogin}>
-                    <Login />
-                </Modal>
+
+                {connecting ? <div className={styles.connect_app}><LoadingOutlined /></div> : <div className={styles.connect_app} onClick={this.login}><UserOutlined /></div>}
+
             </>;
     }
 }

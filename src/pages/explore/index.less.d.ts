@@ -13,6 +13,7 @@ interface CssExports {
   'head': string;
   'head_inner': string;
   'head_right': string;
+  'header_inner': string;
   'icon': string;
   'item_fullname': string;
   'item_symbol': string;
@@ -20,6 +21,7 @@ interface CssExports {
   'list': string;
   'list_hd': string;
   'list_item': string;
+  'list_wrap': string;
   'red': string;
   'title': string;
   'value': string;

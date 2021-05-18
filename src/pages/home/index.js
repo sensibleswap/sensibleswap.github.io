@@ -1,12 +1,13 @@
 'use strict';
 import React, { Component } from 'react';
-import {  Button } from 'antd';
-import { CheckOutlined, CloseOutlined} from '@ant-design/icons';
+import { Button } from 'antd';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import styles from './index.less';
 import _ from 'i18n';
 
 import Lang from '../layout/lang';
 import Nav from '../layout/nav';
+import Footer from '../layout/footer';
 import CustomIcon from 'components/icon';
 
 export default class Home extends Component {
@@ -88,7 +89,7 @@ export default class Home extends Component {
                 <div className={styles.head_inner}>
                     <Nav />
                     <div className={styles.head_right}>
-                        <Button type='primary' onClick={()=>{
+                        <Button type='primary' onClick={() => {
                             this.props.history.push('swap')
                         }}>{_('use_tokenswap')}</Button>
                         <Lang />
@@ -97,30 +98,24 @@ export default class Home extends Component {
                 </div>
             </section>
             <section className={styles.main}>
+                <div className={styles.logo}><CustomIcon type="iconTS_Logo" style={{fontSize: 70}} /></div>
                 <div className={styles.main_title}>{_('tokenswap')}</div>
                 <div className={styles.main_desc}>{_('tokenswap_desc')}</div>
                 <div className={styles.btns}>
-                    <Button type='primary' className={styles.btn} style={{marginRight: 30}} onClick={()=>{
+                    <Button type='primary' className={styles.btn} style={{ marginRight: 30 }} onClick={() => {
                         this.props.history.push('swap')
                     }}>{_('use_tokenswap')}</Button>
-                    <Button className={styles.btn} onClick={()=>{
-                        window.location.href='https://app.gitbook.com/@di1/s/tokenswap/'
+                    <Button className={styles.btn} onClick={() => {
+                        window.location.href = 'https://app.gitbook.com/@di1/s/tokenswap/'
                     }}>{_('documentation')}</Button>
                 </div>
             </section>
             <section className={styles.content}>
-                <div className={styles.title}>{_('comp_ts')}</div>
+                <div className={styles.title_web}>{_('comp_ts')}</div>
+                <div className={styles.title_h5}>{_('comp_ts_h5')}</div>
                 {this.renderList()}
             </section>
-            <section className={styles.footer}>
-                    <div className={styles.footer_inner}>
-                        <div className={styles.text}>© TokenSwap 2021</div>
-                        <div className={styles.icons}>
-                            <a href='https://t.me/tokenswap_pro' target='_blank' className={styles.icon}><CustomIcon type='icontelegram' /></a>
-                            <a href='https://twitter.com/TokenSwap_pro' target='_blank' className={styles.icon}><CustomIcon type='iconTwitter' /></a>
-                        </div>
-                    </div>
-            </section>
+            <Footer />
         </section>)
     }
 }

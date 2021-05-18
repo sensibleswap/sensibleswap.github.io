@@ -1,21 +1,25 @@
 .lang {
-    margin-left: 20px;
-    cursor: pointer;
+  margin-left: 20px;
+  cursor: pointer;
 
-    background-color: #fff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    line-height: 40px;
-    position: absolute;
-    top: 30px;
-    right: 30px;
+  background-color: #fff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  line-height: 40px;
 }
 
 
+@media only screen and (max-width: 767.99px) {
+  .lang {
+
+    display: none;
+  }
+}
+
 @media only screen and (max-width: 1110px) {
-    .lang {
-        position: static;
-    }
+  .lang {
+    position: static;
+  }
 }

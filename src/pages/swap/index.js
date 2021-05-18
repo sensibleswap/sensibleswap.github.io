@@ -5,7 +5,7 @@ import CustomIcon from 'components/icon';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Button, Form, InputNumber } from 'antd';
+import { Button, Form, InputNumber, Modal } from 'antd';
 import { DownOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import Setting from '../setting';
@@ -14,14 +14,12 @@ import Volt from 'lib/volt';
 import Loading from 'components/loading';
 import BigNumber from 'bignumber.js';
 import { slippage_data, feeRate } from 'common/config';
-import EventBus from 'common/eventBus';
+// import EventBus from 'common/eventBus';
 import { formatAmount } from 'common/utils';
 
 const { storage_name, defaultIndex, datas } = slippage_data;
 
 const FormItem = Form.Item;
-const toAddress = "1EgWmJUAXpB9ruMg67eAkuEvjqXu9jd7iA";
-const amount = 0.1;
 
 const menu = [
     {
@@ -164,12 +162,12 @@ export default class Swap extends Component {
             </div>
             <FormItem
                 name={'origin_amount'}>
-                <InputNumber 
-                    className={styles.input} 
-                    onChange={this.changeOriginAmount} 
-                    onPressEnter={this.changeOriginAmount} 
+                <InputNumber
+                    className={styles.input}
+                    onChange={this.changeOriginAmount}
+                    onPressEnter={this.changeOriginAmount}
                     formatter={value => parseFloat(value || 0)}
-                    min='0' 
+                    min='0'
                 />
             </FormItem>
         </div>
@@ -181,21 +179,21 @@ export default class Swap extends Component {
         if (!aim_token) return <div>notoken</div>;
         return <div className={styles.box}>
             <div className={styles.coin}>
-            <div style={{ width: 40 }}>{aim_token.name && <TokenLogo name={aim_token.name} icon={aim_token.icon} />}</div>
+                <div style={{ width: 40 }}>{aim_token.name && <TokenLogo name={aim_token.name} icon={aim_token.icon} />}</div>
                 <div className={styles.name}>{aim_token.symbol || _('select')}</div>
                 <DownOutlined onClick={() => this.showUI('selectToken_aim')} />
             </div>
             <FormItem
                 name={'aim_amount'}>
-                <InputNumber 
-                    className={styles.input} 
-                    type='number' 
-                    onChange={this.changeAimAmount} 
-                    onPressEnter={this.changeAimAmount} 
+                <InputNumber
+                    className={styles.input}
+                    type='number'
+                    onChange={this.changeAimAmount}
+                    onPressEnter={this.changeAimAmount}
                     formatter={value => parseFloat(value || 0)}
-                    min='0' 
+                    min='0'
                     max={Math.floor(pair_data.pairLiquidity ? pair_data.pairLiquidity[1].amount : 0)}
-                 />
+                />
             </FormItem>
         </div>
     }
@@ -369,12 +367,13 @@ export default class Swap extends Component {
     }
 
     login() {
-        EventBus.emit('login')
+        // EventBus.emit('login')
+        Volt.login()
     }
 
     renderButton() {
         const { isLogin, origin_token_id, pair_data } = this.props;
-        const { slip, lastMod, origin_amount, aim_amount  } = this.state;
+        const { slip, lastMod, origin_amount, aim_amount } = this.state;
         const origin_token = this.findToken(origin_token_id);
 
         const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
@@ -404,12 +403,10 @@ export default class Swap extends Component {
     }
 
     submit = async () => {
-        const { current } = this.formRef;
-        const { origin_amount, aim_amount } = current.getFieldsValue(['origin_amount', 'aim_amount']);
-        this.setState({
-            formFinish: true,
-            origin_amount,
-            aim_amount
+        const { origin_amount, aim_amount } = this.state;
+        await Volt.createSimplePayment({
+            toAddress: 'account@volt.id',
+            amount: origin_amount,
         })
     }
 
@@ -542,12 +539,14 @@ export default class Swap extends Component {
     }
 
     render() {
-        const { page } = this.state;
         if (this.props.loading) return <Loading />
+        const { page } = this.state;
+        const { origin_token_id } = this.props;
         return <div style={{ position: 'relative' }}>
             {this.renderSwap()}
             <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none' }}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>
             <div style={{ position: 'absolute', top: 0, left: 0, display: page === 'setting' ? 'block' : 'none' }}><Setting close={() => this.showUI('form')} /></div>
+            
         </div>
     }
 }

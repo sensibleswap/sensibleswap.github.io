@@ -1,10 +1,12 @@
+@import '../../common/global.less';
 .head {
   background-color: #f6f6f9;
   height: 100px;
 }
 
 .head_inner {
-  width: 960px;
+  width: 100%;
+  max-width: @page_width;
   margin: 0 auto;
   padding: 25px 0;
 }
@@ -22,19 +24,27 @@
   padding: 30px 0;
   text-align: center;
   height: 350px;
+
+  .logo {
+    display: none;
+  }
+
   .main_title {
     font-size: 50px;
     font-weight: 700;
   }
+
   .main_desc {
     font-size: 38px;
     font-weight: 500;
     margin-top: 10px;
   }
+
   .btns {
     display: flex;
     justify-content: center;
     margin-top: 40px;
+
     .btn {
       width: 160px;
       height: 50px;
@@ -46,7 +56,8 @@
 }
 
 .content {
-  width: 960px;
+  width: 100%;
+  max-width: @page_width;
   margin: 0 auto;
 }
 
@@ -75,10 +86,18 @@
   }
 }
 
-.title {
+.title,
+.title_web {
   margin-top: 40px;
   font-size: 32px;
   font-weight: 700;
+}
+
+.title_h5 {
+  margin: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  display: none;
 }
 
 .list {
@@ -116,6 +135,7 @@
   font-size: 18px;
   font-weight: 400;
   align-items: center;
+
   .col_1 {
     padding-right: 60px;
   }
@@ -142,31 +162,49 @@
   }
 }
 
-.footer {
-  background-color: #000;
-  margin-top: 130px;
-}
-.footer_inner {
-  width: 960px;
-  margin: 0 auto;
-  padding: 40px 0;
-  height: 130px;
-  display: flex;
-  justify-content: space-between;
-  color: #fff;
-  align-items: center;
-  .text {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 50px;
+
+@media only screen and (max-width: 767.99px) {
+  .head {
+    height: 60px;
   }
-  .icons {
-    display: flex;
-    .icon {
-      margin-left: 40px;
-      :global(.iconfont) {
-        font-size: 30px;
-      }
+
+  .head_inner {
+    padding: 10px;
+    width: auto;
+  }
+
+  .head_right {
+    height: 40px;
+  }
+
+  .content {
+    .list {
+      width: @page_width;
+      overflow-x: auto;
     }
   }
+
+  .main {
+    .logo {
+      display: block;
+    }
+
+    .main_title {
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    .main_desc {
+      font-size: 18px;
+    }
+  }
+
+  .title_h5 {
+    display: block;
+  }
+
+  .title_web {
+    display: none;
+  }
+
 }

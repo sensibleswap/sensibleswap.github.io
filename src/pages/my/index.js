@@ -6,8 +6,7 @@ import CustomIcon from 'components/icon';
 import styles from './index.less';
 import _ from 'i18n';
 
-import HeadLeft from '../layout/head/headLeft';
-import HeadRight from '../layout/head/headRight';
+import Header from '../layout/header';
 import Activity from 'components/activity';
 import { Link, withRouter } from 'umi';
 
@@ -158,13 +157,12 @@ export default class My extends Component {
         return (<section className={styles.container}>
             <section className={styles.left}>
                 <div className={styles.left_inner}>
-                <HeadLeft />
+                <Header />
                     {this.renderContent()}
                 </div>
             </section>
             <section className={styles.right}>
                 <div className={styles.sidebar}>
-                <HeadRight />
                     <h3 className={styles.title}>{_('your_active')}</h3>
                     <div className={styles.box}>
                     <Activity />

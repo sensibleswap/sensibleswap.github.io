@@ -21,7 +21,7 @@ export default defineConfig({
   },
   proxy: {
     '/api.json': {
-      target: 'http://192.168.0.135:8888',
+      target: 'http://127.0.0.1:8888',
       changeOrigin: true,
     }
   },
@@ -31,7 +31,7 @@ export default defineConfig({
       to: 'assets/'
     }
   ],
-  chunks: ['vendors', 'voltsdk', 'umi'],
+  chunks: ['vendors', 'umi', 'echarts', 'react'],
   chainWebpack: function (config, { webpack }) {
     config.merge({
       optimization: {
@@ -42,15 +42,33 @@ export default defineConfig({
           automaticNameDelimiter: '.',
           cacheGroups: {
 
-            voltsdk: {
-              name: "voltsdk",
-              test: /[\\/]node_modules[\\/](voltsdk)[\\/]/,
+            // voltsdk: {
+            //   name: "voltsdk",
+            //   test: /[\\/]node_modules[\\/](voltsdk)[\\/]/,
+            //   priority: 10,
+            //   enforce: true,
+            // },
+            umi: {
+              name: "umi",
+              test: /[\\/]node_modules[\\/](umi)[\\/]/,
+              priority: 10,
+              enforce: true,
+            },
+            echarts: {
+              name: "echarts",
+              test: /[\\/]node_modules[\\/](echarts)[\\/]/,
+              priority: 10,
+              enforce: true,
+            },
+            react: {
+              name: "react",
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
               priority: 10,
               enforce: true,
             },
             vendors: {
               name: "vendors",
-              test: /[\\/]node_modules[\\/](?!voltsdk).*$/,
+              test: /[\\/]node_modules[\\/](?!voltsdk|umi|echarts|msgpack5|react|react-dom).*$/,
               priority: 11,
               enforce: true,
             },

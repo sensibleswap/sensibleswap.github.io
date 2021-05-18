@@ -147,6 +147,7 @@ const texts = {
     documentation: 'Documentation',
     comparisons: 'Comparisons',
     comp_ts: 'Comparing TokenSwap',
+    comp_ts_h5: 'Comparing TokenSwap',
     feature: 'Feature or capability',
     cex: 'CEX',
     other_dex: 'Other DEX',
@@ -169,15 +170,33 @@ const texts = {
     login: 'Log In',
     lac_balance: 'Insufficient Balance',
     lac_token_balance: 'Insufficient %s Balance',
-    no_pair: 'No Pair',
+    no_pair: 'No such pair',
     not_enough: 'Not Enough',
 
     create_pair_tips: 'Understanding Impermanent Loss',
     create_pair_desc: 'Before becoming a Liquidity Provider, please understand the risks involved with Impermanent Loss. You can learn more about it  here.',
     create_pair_rewards: 'Liquidity Provider Rewards',
     create_pair_rewords_desc1: 'Liquidity Providers earn a 0.35% fee',
-    create_pair_rewords_desc2: 'on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.'
-
+    create_pair_rewords_desc2: 'on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.',
+    pay_account_title: 'Payment',
+    from_your: 'From Your',
+    send_to: 'Send to',
+    pay: 'Pay',
+    just: 'Just Now',
+    minute_ago: ' minute ago',
+    minutes_ago: ' minutes ago',
+    hour_ago: ' hour ago',
+    hours_age: ' hours ago',
+    day_ago: ' day ago',
+    days_ago: ' days ago',
+    week_ago: ' week ago',
+    weeks_ago: ' weeks ago',
+    month_ago: ' month ago',
+    months_ago: ' months ago',
+    year_ago: ' year ago',
+    years_ago: ' years ago',
+    start_swapping: 'Start Swapping',
+    start_pooling: 'Start Pooling'
 
 }
 module.exports = texts;

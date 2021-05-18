@@ -1,16 +1,18 @@
 'use strict';
 import React, { Component } from 'react';
+import { Button } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 import Chart from 'components/chart';
 import Loading from 'components/loading';
 import styles from './index.less';
 import _ from 'i18n';
 
-import HeadLeft from '../layout/head/headLeft';
-import HeadRight from '../layout/head/headRight';
+import Header from '../layout/header';
 import Liquidity from '../liquidity';
 import PairStat from '../pairStat';
 import PairIntro from '../pairIntro';
 import { connect } from 'umi';
+import { jc } from 'common/utils';
 
 @connect(({ service, user, loading }) => {
     const { effects } = loading;
@@ -21,25 +23,44 @@ import { connect } from 'umi';
     }
 })
 export default class Pool extends Component {
-
-    // componentDidMount() {
-    //     this.init()
-    // }
-    // async init() {
-    //     const { dispatch } = this.props;
-    //     await dispatch({
-    //         type: 'user/save',
-    //         payload: {
-    //             origin_token_id: 'BSV',
-    //             aim_token_id: ''
-    //         }
-    //     });
-    // }
+    constructor(props) {
+        super(props);
+        this.state = {
+            app_pannel: false
+        }
+    }
+    componentDidMount() {
+        this.init()
+    }
+    async init() {
+        const { dispatch } = this.props;
+        await dispatch({
+            type: 'user/save',
+            payload: {
+                origin_token_id: 'BSV',
+                aim_token_id: ''
+            }
+        });
+    }
 
 
     findToken = (id) => {
         const { tokens } = this.props;
-        return tokens.find(v => v.tokenId === id)
+        return tokens.find(v => v.tokenId === id) || {}
+    }
+
+
+
+    showPannel = () => {
+        this.setState({
+            app_pannel: true
+        })
+    }
+
+    hidePannel = () => {
+        this.setState({
+            app_pannel: false
+        })
     }
 
     renderContent() {
@@ -67,16 +88,21 @@ export default class Pool extends Component {
     }
 
     render() {
+        const { app_pannel } = this.state;
         return (<section className={styles.container}>
-            <section className={styles.left}>
+            <section className={app_pannel ? jc(styles.left, styles.app_hide) : styles.left}>
                 <div className={styles.left_inner}>
-                    <HeadLeft />
+                    <Header />
                     {this.renderContent()}
+                    <Button type="primary" className={styles.app_start_btn} onClick={this.showPannel}>{_('start_pooling')}</Button>
                 </div>
             </section>
             <section className={styles.right}>
-                <div className={styles.sidebar}>
-                    <HeadRight />
+            <div className={app_pannel ? styles.sidebar : jc(styles.sidebar, styles.app_hide)}>
+                    <div className={styles.app_title}>
+                        {_('pool')}
+                        <div className={styles.close} onClick={this.hidePannel}><CloseOutlined /></div>
+                    </div>
                     <Liquidity />
                 </div>
             </section>

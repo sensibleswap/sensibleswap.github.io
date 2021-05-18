@@ -11,6 +11,7 @@ interface CssExports {
   'btns': string;
   'cancel': string;
   'connect': string;
+  'connect_app': string;
   'dia_title': string;
   'dialog': string;
   'ft': string;

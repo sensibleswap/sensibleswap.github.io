@@ -34,6 +34,7 @@ interface CssExports {
   'my_pair_info': string;
   'name': string;
   'normal': string;
+  'selectToken_wrap': string;
   'steps': string;
   'switch_icon': string;
   'title': string;

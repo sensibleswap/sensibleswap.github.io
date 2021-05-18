@@ -8,8 +8,7 @@ import { CheckCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import styles from './index.less';
 import _ from 'i18n';
 
-import HeadLeft from '../layout/head/headLeft';
-import HeadRight from '../layout/head/headRight';
+import Header from '../layout/header';
 import { Link, withRouter } from 'umi';
 
 const datas = [
@@ -183,13 +182,12 @@ export default class RemovePage extends Component {
         return (<section className={styles.container}>
             <section className={styles.left}>
                 <div className={styles.left_inner}>
-                    <HeadLeft />
+                    <Header />
                     {this.renderContent()}
                 </div>
             </section>
             <section className={styles.right}>
                 <div className={styles.sidebar}>
-                    <HeadRight />
                     <div className={styles.box}>
                         <div className={styles.hd}>
                             <div className={styles.hd_item} onClick={() => {

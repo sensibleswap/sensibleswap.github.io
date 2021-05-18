@@ -72,9 +72,6 @@ export default class Activity extends Component {
         }
     }
 
-    componentDidMount() {
-
-    }
     switchTab = (index) => {
 
         this.setState({

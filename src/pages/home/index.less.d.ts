@@ -9,24 +9,22 @@ interface CssExports {
   'col_2': string;
   'col_3': string;
   'content': string;
-  'footer': string;
-  'footer_inner': string;
   'green': string;
   'head': string;
   'head_inner': string;
   'head_right': string;
-  'icon': string;
-  'icons': string;
   'label': string;
   'list': string;
   'list_hd': string;
   'list_item': string;
+  'logo': string;
   'main': string;
   'main_desc': string;
   'main_title': string;
   'red': string;
-  'text': string;
   'title': string;
+  'title_h5': string;
+  'title_web': string;
   'value': string;
 }
 export const cssExports: CssExports;

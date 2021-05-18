@@ -2,7 +2,6 @@
 import React, { Component } from 'react';
 import { Input } from 'antd';
 import { ArrowLeftOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import CustomIcon from 'components/icon';
 import TokenLogo from 'components/tokenicon';
 import { connect } from 'umi';
 import styles from './index.less';

@@ -4,7 +4,7 @@ import { Table, Button } from 'antd';
 import styles from './index.less';
 import _ from 'i18n';
 import BigNumber from 'bignumber.js';
-import {formatDate} from 'common/utils';
+import { formatDate } from 'common/utils';
 import { connect } from 'umi';
 
 const data = [
@@ -84,16 +84,45 @@ export default class Transactions extends Component {
         this.state = {
             filteredInfo: null,
             sortedInfo: null,
-          };
+        };
     }
 
     handleChange = (pagination, filters, sorter) => {
         console.log('Various parameters', pagination, filters, sorter);
         this.setState({
-          filteredInfo: filters,
-          sortedInfo: sorter,
+            filteredInfo: filters,
+            sortedInfo: sorter,
         });
-      };
+    };
+
+    beautifyDate = (createTime) => {
+        const now = Date.parse(new Date('2021-03-31 15:14:35'));
+        const limit = (now - createTime) / 1000;
+        let content = "";
+        if (limit < 60) {
+            content = _('just');
+        } else if (limit >= 60 && limit < 60 * 60) {
+            const n = Math.floor(limit / 60);
+            content = n + _( n > 1 ? 'minutes_ago' : 'minute_ago');
+        } else if (limit >= 60*60 && limit < 24*60*60) {
+            const n = Math.floor(limit / 3600);
+            content = n + _( n > 1 ? 'hours_ago' : 'hour_ago');
+        } else if (limit >= 24*60*60 && limit < 7*24*60*60) {
+            const n = Math.floor(limit / 86400);
+            content = n + _( n > 1 ? 'days_ago' : 'day_ago');
+        } else if (limit >= 7*24*60*60 && limit < 30*24*60*60) {
+            const n = Math.floor(limit / (7*24*60*60));
+            content = n + _( n > 1 ? 'weeks_ago' : 'week_ago');
+        } else if (limit >= 30*24*60*60 && limit < 365*24*60*60) {
+            const n = Math.floor(limit / (30*24*60*60));
+            content = n + _( n > 1 ? 'months_ago' : 'month_ago');
+        } else if (limit >= 365*24*60*60) {
+            const n = Math.floor(limit / (365*24*60*60));
+            content = n + _( n > 1 ? 'years_ago' : 'year_ago');
+        } 
+        return content;
+        // return formatDate(createTime)
+    }
 
     render() {
         let { sortedInfo, filteredInfo } = this.state;
@@ -118,7 +147,7 @@ export default class Transactions extends Component {
                 dataIndex: 'inputAmount',
                 key: 'inputAmount',
                 ellipsis: true,
-                width: 100,
+                width: 150,
                 render: (text, record, index) => {
                     return BigNumber(record.inputAmount || 0).multipliedBy(record.inputPrice || 0).toFixed(6).toString();
                 }
@@ -130,13 +159,15 @@ export default class Transactions extends Component {
                 sorter: (a, b) => a.time - b.time,
                 sortOrder: sortedInfo.columnKey === 'createtime' && sortedInfo.order,
                 ellipsis: true,
+                width: 130,
                 render: (text, record, index) => {
+                    return this.beautifyDate(text);
                     return formatDate(text);
                 }
             },
         ];
         return <div className={styles.container}>
-            <Table columns={columns} dataSource={history ? history.list : []} onChange={this.handleChange} rowKey="id" />
+            <Table className={styles.tx_table} columns={columns} dataSource={history ? history.list : []} onChange={this.handleChange} rowKey="id" />
         </div>;
     }
 }

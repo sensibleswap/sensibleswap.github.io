@@ -3,7 +3,7 @@ import WebSocket from 'socket.io-client';
 export default class sc {
 
     constructor() {
-        this.baseUrl = 'ws://192.168.0.135:8888';
+        this.baseUrl = 'ws://127.0.0.1:8888';
         this.init();
     }
     init() {

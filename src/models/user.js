@@ -55,51 +55,79 @@ export default {
     accountName: '',
     wid: 0,
     wallet: {},
-    tokens: [],
+    tokens: [
+      {
+        name: 'Bitcoin SV', 
+        des_en: 'Bitcoin SV is a digital currency that restored the original Bitcoin protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that it aligns with Satoshi’s vision for Bitcoin as a digital P2P cash.', 
+        des_zh: '中文Bitcoin SV is a digital currency that restored the original Bitcoin protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that it aligns with Satoshi’s vision for Bitcoin as a digital P2P cash.', 
+        web_url: '', 
+        symbol: 'BSV',
+        id: 'bsv' 
+      },
+      {
+        name: 'JieJiuBi', 
+        des_en: '英文JJBBitcoin Satoshi Vision (SV) is a cryptocurrency created in late 2018 by adjusting the protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that cheaper fees aligns with Satoshi Nakamoto\'s vision for Bitcoin', 
+        des_zh: '中文JJBBitcoin Satoshi Vision (SV) is a cryptocurrency created in late 2018 by adjusting the protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that cheaper fees aligns with Satoshi Nakamoto\'s vision for Bitcoin', 
+        web_url: '', 
+        symbol: 'JJB',
+        id: 'bf19e24d4e1a640be3925aa26ce9fbf38cbb7bb2' 
+
+      }
+    ],
     origin_token_id: 'BSV',
     aim_token_id: '',
     // reverse: false,
 
     // origin_token_id: '8188eefde21026e50814f75990df017fdaf8f1c5',
     // aim_token_id: '42d478002d33cc4ce381e9fe8d83a57d0ea55f96',
-    pair_data: {}
+    pair_data: {
+      detail: [{
+        name: 'Bitcoin SV', 
+        des_en: 'Bitcoin SV is a digital currency that restored the original Bitcoin protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that it aligns with Satoshi’s vision for Bitcoin as a digital P2P cash.', 
+        des_zh: '中文Bitcoin SV is a digital currency that restored the original Bitcoin protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that it aligns with Satoshi’s vision for Bitcoin as a digital P2P cash.', 
+        web_url: '', 
+        id: 'bsv' 
+      },
+      {
+        name: 'JieJiuBi', 
+        des_en: '英文JJBBitcoin Satoshi Vision (SV) is a cryptocurrency created in late 2018 by adjusting the protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that cheaper fees aligns with Satoshi Nakamoto\'s vision for Bitcoin', 
+        des_zh: '中文JJBBitcoin Satoshi Vision (SV) is a cryptocurrency created in late 2018 by adjusting the protocol with larger block sizes to reduce transaction fees. The name comes from its supporters belief that cheaper fees aligns with Satoshi Nakamoto\'s vision for Bitcoin', 
+        web_url: '', 
+        id: 'bf19e24d4e1a640be3925aa26ce9fbf38cbb7bb2' 
+
+      }
+    ],
+      pairLiquidity: [
+        {
+          tokenid: 'bsv'
+        },
+        {
+          tokenid: 'bf19e24d4e1a640be3925aa26ce9fbf38cbb7bb2'
+        }
+      ]
+    }
   },
 
   subscriptions: {
-    async setup({ dispatch, history }) {  // eslint-disable-line
-      // const res = await Volt.isOnline();
-      // console.log(res);
-      // if (res) {
-      //   const wallet = await Volt.getWalletById();
-      //   console.log(wallet)
-      //   dispatch({
-      //     type: 'save',
-      //     payload: {
-      //       isLogin: true,
-      //       accountName: wallet.paymail || wallet.name,
-      //       balance: formatSat(wallet.value),
-      //       wallet: wallet,
-      //       wid: wallet.id
-      //     },
-      //   });
-      // }
-      const res = await tokenApi.queryList();
-      // console.log(res);
-      dispatch({
-        type: 'save',
-        payload: {
-          tokens: [
-            {
-              name: 'bsv',
-              tokenId: 'BSV',
-              value: 0,
-              symbol: 'BSV',
-              icon: 'iconlogo-bitcoin'
+    setup({ dispatch, history }) {  // eslint-disable-line
+      setTimeout(async ()=>{
+        const _online = await Volt.isOnline();
+        if (_online) {
+          const res = await Volt.getWalletDetail();
+          const wallet = res.data;
+          dispatch({
+            type: 'save',
+            payload: {
+              isLogin: true,
+              accountName: wallet.paymail || wallet.name,
+              balance: formatSat(wallet.value),
+              wallet: wallet,
+              wid: wallet.id
             },
-            ...res
-          ]
+          });
         }
-      })
+      }, 100)
+      
 
 
     }
@@ -107,24 +135,24 @@ export default {
 
   effects: {
 
-    // *init({ payload }, { call, put }) {
-    //   const res = yield Volt.isOnline();
-    //   debugger
-    //   if (res) {
-    //     const res = yield Volt.getWalletById();
-    //     // console.log(res);
-    //     if (res.code !== 200) return;
-    //     const wallet = res.data;
-    //     yield put({
-    //       type: 'saveWalletData',
-    //       payload: {
-    //         isLogin: true,
-    //         accountName: wallet.paymail || wallet.name,
-    //         wallet: wallet,
-    //       },
-    //     });
-    //   }
-    // },
+    *init({ payload }, { call, put }) {
+      const res = yield Volt.isOnline();
+      debugger
+      if (res) {
+        const res = yield Volt.getWalletById();
+        // console.log(res);
+        if (res.code !== 200) return;
+        const wallet = res.data;
+        yield put({
+          type: 'saveWalletData',
+          payload: {
+            isLogin: true,
+            accountName: wallet.paymail || wallet.name,
+            wallet: wallet,
+          },
+        });
+      }
+    },
 
     //扫码登录后的获取数据
     // *login({ payload }, { call, put }) {
@@ -150,7 +178,6 @@ export default {
     *getWalletList({ payload }, { call, put }) {
 
       const res = yield Volt.getWalletList();
-      // console.log(res);
       if (res.code !== 200) return;
       const wallets = res.data;
       yield put({
@@ -180,7 +207,6 @@ export default {
     *switchWallet({ payload }, { call, put }) {
       const { wid } = payload;
       const res = yield Volt.switchWallet(wid);
-      // console.log(res);
       if (res.code !== 200) return;
       const wallet = res.data;
       yield put({

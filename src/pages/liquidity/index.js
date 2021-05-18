@@ -4,13 +4,15 @@ import { jc } from 'common/utils';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Steps, Button, Form, InputNumber, Spin, message } from 'antd';
+import { Steps, Button, Form, InputNumber, Spin, Modal } from 'antd';
 import { QuestionCircleOutlined, DownOutlined, PlusOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import { withRouter, connect } from 'umi';
 import BigNumber from 'bignumber.js';
 import { formatAmount } from 'common/utils';
-import EventBus from 'common/eventBus';
+// import EventBus from 'common/eventBus';
+import Pay from 'components/pay';
+import Volt from '../../lib/volt';
 
 const { Step } = Steps;
 const FormItem = Form.Item;
@@ -45,7 +47,8 @@ export default class Liquidity extends Component {
             currentMenuItem: menu[0].key,
             currentStep: 0,
             origin_amount: 0,
-            aim_amount: 0
+            aim_amount: 0,
+            payVisible: false
         }
         this.formRef = React.createRef();
     }
@@ -187,7 +190,7 @@ export default class Liquidity extends Component {
                         <FormItem
                             name={'origin_amount'}>
                             <InputNumber className={styles.input} onChange={this.changeOriginAmount} min='0'
-                            formatter={value => parseFloat(value || 0)} />
+                                formatter={value => parseFloat(value || 0)} />
                         </FormItem>
                     </div>
 
@@ -210,7 +213,7 @@ export default class Liquidity extends Component {
                         <FormItem
                             name={'aim_amount'}>
                             <InputNumber className={styles.input} onChange={this.changeAimAmount} min='0'
-                            formatter={value => parseFloat(value || 0)} />
+                                formatter={value => parseFloat(value || 0)} />
                         </FormItem>
                     </div>
                     {this.renderButton()}
@@ -220,7 +223,7 @@ export default class Liquidity extends Component {
     }
 
     login() {
-        EventBus.emit('login')
+        Volt.login()
     }
 
 
@@ -238,7 +241,7 @@ export default class Liquidity extends Component {
         } else if (parseFloat(origin_amount) <= 0 || parseFloat(aim_amount) <= 0) {
             // 未输入数量
             return <Button className={styles.btn_wait}>{_('enter_amount')}</Button>;
-        } else if (parseFloat(origin_amount) > parseFloat(origin_token.value || 0)){
+        } else if (parseFloat(origin_amount) > parseFloat(origin_token.value || 0)) {
             // 余额不足
             return <Button className={styles.btn_wait}>{_('lac_token_balance', origin_token.symbol)}</Button>
         } else if (parseFloat(aim_amount) > parseFloat(aim_token.value || 0)) {
@@ -254,8 +257,7 @@ export default class Liquidity extends Component {
 
     handleSubmit = () => {
         this.setState({
-            currentStep: 2,
-            formFinish: true
+            payVisible: true
         })
     }
 
@@ -362,11 +364,61 @@ export default class Liquidity extends Component {
         }
     }
 
+    closePayPop = () => {
+        this.setState({
+            payVisible: false
+        })
+    }
+
+    payCallback = (value) => {
+        if (value) {
+
+
+            this.setState({
+                currentStep: 2,
+                formFinish: true
+            })
+        }
+        this.closePayPop();
+
+    }
+
     render() {
-        const { page } = this.state;
+        const { page, payVisible, origin_amount, aim_amount } = this.state;
+        const { origin_token_id, aim_token_id, accountName } = this.props;
+        const origin_token = this.findToken(origin_token_id);
+        const aim_token = this.findToken(aim_token_id);
         return <div style={{ position: 'relative' }}>
             {this.renderSwap()}
-            {(page === 'selectToken_origin' || page === 'selectToken_aim') && <div style={{ position: 'absolute', top: 0, left: 0 }}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>}
+            {(page === 'selectToken_origin' || page === 'selectToken_aim') && <div className={styles.selectToken_wrap}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>}
+            {payVisible && <Modal
+                title=""
+                visible={payVisible}
+                footer={null}
+                className={styles.pay_dialog}
+                width="475px"
+                maskClosable={true}
+                closeable={false}
+                onCancel={this.closePayPop}>
+                <Pay payCallback={this.payCallback} data={{
+                    accountName,
+                    toAddress: '1ATnFVHXuzpvoyECjuZ1QPLbtkAkKvoSJn',
+                    tokens: [
+                        {
+                            amount: origin_amount,
+                            symbol: origin_token.symbol,
+                            name: origin_token.name,
+                            icon: origin_token.icon
+                        },
+                        {
+                            amount: aim_amount,
+                            symbol: aim_token.symbol,
+                            name: aim_token.name,
+                            icon: aim_token.icon
+                        },
+                    ]
+                }} />
+            </Modal>}
         </div>
     }
 }

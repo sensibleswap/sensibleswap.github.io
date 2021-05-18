@@ -21,7 +21,7 @@ let protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
 export default class WebSocketApi extends EventEmitter {
   constructor(options = {}) {
     super();
-    let baseHost  = 'ws://192.168.0.135:8888';
+    let baseHost  = 'ws://127.0.0.1:8888';
     
 
     this._ready = false;

@@ -31,7 +31,10 @@ option = {
         show: false
     },
     tooltip: {
-        trigger: 'axis'
+        trigger: 'axis',
+        formatter: function (params) {
+            return 'Date: ' + params[0].name + '<br>Value: ' + params[0].data;
+        }
     },
     series: [{
         data: datas[0],
@@ -76,8 +79,8 @@ export default class Chart extends Component {
             xData.push(brokenLine[item].time);
             data.push(brokenLine[item].amount);
         })
-        option.xAxis.data = xData;
-        option.series[0].data = data;
+        // option.xAxis.data = xData;
+        // option.series[0].data = data;
         option && this.myChart.setOption(option);
 
     }
@@ -93,7 +96,7 @@ export default class Chart extends Component {
     render() {
         const { chart_index } = this.state;
         return <div className={styles.container}>
-            <div id='J_Chart' style={{ width: 465, height: 270 }}></div>
+            <div id='J_Chart' className={styles.chart}></div>
             <div className={styles.trigger_wrap}>
                 {['1D', '1W', '1M'].map((item, index) => (
                     <span onClick={() => this.switch(index)} key={item} className={index === chart_index ? styles.current_trigger : styles.trigger}>{item}</span>

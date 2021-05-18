@@ -137,6 +137,7 @@ const texts = {
 
     connect_volt: '连接你的Volt钱包',
     scan_app: '用你的Volt钱包扫描解锁',
+    refresh_url: '点击刷新二维码',
     download_app_1: '从',
     download_app_2: '或以下渠道下载',
 
@@ -147,6 +148,7 @@ const texts = {
     documentation: '文档',
     comparisons: '比较',
     comp_ts: 'TokenSwap和其他类型交易所的异同对比',
+    comp_ts_h5: '比较TokenSwap',
     feature: '关键功能',
     cex: '中心化交易所',
     other_dex: '其他 DEX',
@@ -161,7 +163,6 @@ const texts = {
     lb_9: '没有抢跑交易从而损害正常交易用户利益',
     lb_10: '超低费用的即时交易撮合，即时完成交易',
 
-    refresh_url: '点击刷新二维码',
     swap_anyway: '仍然交易',
     select: '选择',
     first_liq_er: 'You are the first liquidity provider.',
@@ -176,7 +177,26 @@ const texts = {
     create_pair_desc: 'Before becoming a Liquidity Provider, please understand the risks involved with Impermanent Loss. You can learn more about it  here.',
     create_pair_rewards: 'Liquidity Provider Rewards',
     create_pair_rewords_desc1: 'Liquidity Providers earn a 0.35% fee',
-    create_pair_rewords_desc2: 'on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.'
+    create_pair_rewords_desc2: 'on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.',
+    pay_account_title: 'Payment',
+    from_your: 'From Your',
+    send_to: 'Send to',
+    pay: '支付',
+    just: '刚刚',
+    minute_ago: ' 分钟前',
+    minutes_ago: ' 分钟前',
+    hour_ago: ' 小时前',
+    hours_age: ' 小时前',
+    day_ago: ' 天前',
+    days_ago: ' 天前',
+    week_ago: ' 周前',
+    weeks_ago: ' 周前',
+    month_ago: ' 月前',
+    months_ago: ' 月前',
+    year_ago: ' 年前',
+    years_ago: ' 年前',
+    start_swapping: 'Start Swapping',
+    start_pooling: 'Start Pooling'
 
 }
 module.exports = texts;
