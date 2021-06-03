@@ -196,7 +196,9 @@ const texts = {
     year_ago: ' 年前',
     years_ago: ' 年前',
     start_swapping: 'Start Swapping',
-    start_pooling: 'Start Pooling'
+    start_pooling: 'Start Pooling',
+    wallet_connected: 'Wallet connected',
+    no_wallet_connected: 'No wallet is connected',
 
 }
 module.exports = texts;

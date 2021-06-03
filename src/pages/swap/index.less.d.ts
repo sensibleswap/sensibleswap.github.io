@@ -27,6 +27,7 @@ interface CssExports {
   'menu_item_selected': string;
   'name': string;
   'normal': string;
+  'selectToken_wrap': string;
   'switch_icon': string;
   'title': string;
   'view_detail': string;

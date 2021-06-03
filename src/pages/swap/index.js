@@ -544,7 +544,11 @@ export default class Swap extends Component {
         const { origin_token_id } = this.props;
         return <div style={{ position: 'relative' }}>
             {this.renderSwap()}
-            <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none' }}><SelectToken close={(id) => this.selectedToken(id, page)} /></div>
+            <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none' }}>
+                <div className={styles.selectToken_wrap}>
+                    <SelectToken close={(id) => this.selectedToken(id, page)} />
+                </div>
+            </div>
             <div style={{ position: 'absolute', top: 0, left: 0, display: page === 'setting' ? 'block' : 'none' }}><Setting close={() => this.showUI('form')} /></div>
             
         </div>

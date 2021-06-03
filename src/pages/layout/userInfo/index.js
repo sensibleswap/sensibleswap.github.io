@@ -3,10 +3,11 @@ import React, { Component } from 'react';
 import styles from './index.less';
 import _ from 'i18n';
 import { Button, Popover, Modal, Select } from 'antd';
-import { UpOutlined, SwapOutlined, UserOutlined, DownOutlined, CheckOutlined, LoadingOutlined } from '@ant-design/icons';
+import { UpOutlined, SwapOutlined, UserOutlined, DownOutlined, CheckOutlined, LoadingOutlined, CloseOutlined } from '@ant-design/icons';
 import CustomIcon from 'components/icon';
 import { withRouter, connect } from 'umi';
 import Login from '../login';
+import Lang from '../lang';
 import Volt from 'lib/volt';
 // import EventBus from 'common/eventBus';
 
@@ -208,6 +209,11 @@ export default class UserInfo extends Component {
     renderPop() {
         const { accountName } = this.props;
         return <div className={styles.user_pop}>
+            <div className={styles.app_title}>
+                <Lang />
+                {_('wallet_connected')}
+                <CloseOutlined />
+            </div>
             <div className={styles.hd}>
                 <div className={styles.left}>
                     <div>{_('connected_account')}</div>
