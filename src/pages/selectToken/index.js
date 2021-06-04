@@ -8,18 +8,28 @@ import styles from './index.less';
 import _ from 'i18n';
 
 const { Search } = Input;
-@connect(({ token, user }) => {
+@connect(({ pair }) => {
     return {
-        ...token,
-        ...user
+        ...pair
     }
 
 })
 export default class SelectToken extends Component {
     constructor(props) {
         super(props);
+        const {allPairs} = props;
+        let _allPairs = [], _showList = [];
+        Object.keys(allPairs).forEach(item => {
+            const _obj = {
+                ...allPairs[item],
+                name: item
+            }
+            _allPairs.push(_obj);
+            _showList.push(_obj);
+        })
         this.state = {
-            showList: props.tokens,
+            showList: _showList,
+            allPairs: _allPairs
         }
     }
 
@@ -48,19 +58,23 @@ export default class SelectToken extends Component {
 
     searchByKeywords(keywords, searchArr) {
         const keywordsExp = new RegExp(".*?" + this.escapeRegExpWildcards(keywords) + ".*?", "img");
-        return searchArr.filter(v => (keywordsExp.test(v.name) || keywordsExp.test(v.symbol) || keywords == v.tokenId));
+        
+        
+        return searchArr.filter(v => {
+            return ((keywordsExp.test(v.token1.symbol) || keywordsExp.test(v.token2.symbol) || keywords == v.token1.tokenID || keywords == v.token2.tokenID))
+        });
     }
 
     handleChange = (e) => {
         const { value } = e.target;
-        const { tokens } = this.props;
+        const { allPairs } = this.state;
         // if(!token) return;
         if (!value) {
             return this.setState({
-                showList: tokens
+                showList: allPairs
             })
         }
-        const res = this.searchByKeywords(value, tokens);
+        const res = this.searchByKeywords(value, allPairs);
         this.setState({
             showList: res
         })
@@ -68,7 +82,7 @@ export default class SelectToken extends Component {
 
     render() {
         const { showList } = this.state;
-        const { type } = this.props;
+        const { currentPair } = this.props;
         return <div className={styles.container}>
             <div className={styles.head}>
                 <div className={styles.back}><ArrowLeftOutlined onClick={()=>this.props.close()} style={{fontSize: 16, color: '#2F80ED', fontWeight: 700}} /></div>
@@ -86,14 +100,13 @@ export default class SelectToken extends Component {
                 </div>
                 <div className={styles.token_list}>
                     {showList && showList.map((item) => (
-                        <div className={styles.item} key={item.tokenId} onClick={()=>this.select(item.tokenId)}>
-                            <div className={styles.icon}><TokenLogo name={item.name} icon={item.icon} /></div>
+                        <div className={styles.item} key={item} onClick={()=>this.select(item.name)}>
+                            <div className={styles.icon}><TokenLogo name={item.token1.symbol} size={25} /><TokenLogo name={item.token2.symbol} size={25} style={{marginLeft: '-8px'}} /></div>
                             <div className={styles.title}>
-                                <div className={styles.name}>{item.symbol && item.symbol.toUpperCase()}</div>
-                                <div className={styles.total}>{item.name}</div>
+                                <div className={styles.name}>{item.name.toUpperCase()}</div>
                             </div>
                             <div className={styles.selected}>
-                                {item.tokenid && item.tokenid === this.props[`current_token_${type}`] && <CheckCircleOutlined theme="filled" style={{color: '#2F80ED', fontSize: 30}} />}
+                                {item.name === currentPair && <CheckCircleOutlined theme="filled" style={{color: '#2F80ED', fontSize: 30}} />}
                             </div>
                         </div>
                     ))}

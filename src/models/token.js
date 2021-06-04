@@ -14,23 +14,6 @@ export default {
   subscriptions: {
     async setup({ dispatch, history }) {  // eslint-disable-line
 
-      const res = await tokenApi.queryList();
-      // console.log(res);
-      dispatch({
-        type: 'user/save',
-        payload: {
-          tokens: [
-            {
-              name: 'bsv',
-              tokenId: 'BSV',
-              value: 0,
-              symbol: 'BSV',
-              icon: 'iconlogo-bitcoin'
-            },
-            ...res
-          ]
-        }
-      })
 
     }
   },

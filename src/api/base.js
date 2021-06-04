@@ -1,41 +1,24 @@
 'use strict';
 import 'whatwg-fetch';
 import querystring from 'querystringify';
-const query = querystring.parse(window.location.search);
 
 export default class API {
     constructor() {
-        this.baseUrl = 'https://volt.id/api.json';
-        if(window.location.pathname.indexOf('test.html') > -1) {
-            //预发环境
-            this.baseUrl = 'https://voltpre.bitmesh.com/api.json';
-        }
+        this.baseUrl = '/';
         
-        if (process.env.NODE_ENV === 'development') {
-            this.baseUrl = '/api.json';
-            // this.baseUrl = 'http://127.0.0.1:7001/api.json';
-            // this.baseUrl = 'http://8.210.215.23:7001/api.json';
-            // this.baseUrl = 'https://voltpre.bitmesh.com/api.json';
-            if (query.wss) {
-                this.baseUrl = `${query.wss.replace('wss:', 'https://').replace('ws:', 'http://')}/api.json`;
-            } else if (process.env.wss) {
-                this.baseUrl = `${process.env.wss.replace('ws', 'http')}/api.json`;
-            }
-        }
         this._requestQueue = {};
     }
 
-    _request(api, params = {}, method = 'GET', catchError) {
-        const data = {
-            method: api,
-            params: JSON.stringify(params)
-        };
-        let url = this.baseUrl;
-        return this.sendRequest(url, data, method, catchError);
+    _request(api, params = {}, url = '', method = 'GET', catchError) {
+        // const data = {
+        //     params: JSON.stringify(params)
+        // };
+        if(url) this.baseUrl = url;
+        let api_url = this.baseUrl + api;
+        return this.sendRequest(api_url, params, method, catchError);
     }
 
     sendRequest(url, data = {}, method = 'GET', catchError = true, handle) {
-        let req;
         let key;
         let options;
         if (method.toUpperCase() === 'GET') {
@@ -78,19 +61,13 @@ export default class API {
                 if (handle) {
                     data = handle(data);
                 }
-                if (!data.success) {
-                    if (data.message === 'not login') {
-                        if (window.location.search.indexOf('redirect') < 0) {
-                            return window.location.href = `/?redirect=${encodeURIComponent(window.location.href)}#/user/entry`;
-                        }
-
-                    }
-                    const err = new Error(data.message);
-                    err.code = data.code;
-                    throw err;
-                }
+                // if (data.code) {
+                //     const err = new Error(data.msg);
+                //     err.code = data.code;
+                //     throw err;
+                // }
                 this._requestQueue[key].forEach(fn => {
-                    fn(null, data.data);
+                    fn(null, data);
                 });
                 delete this._requestQueue[key];
             }).catch(err => {
@@ -106,7 +83,7 @@ export default class API {
                 if (err) {
                     if (catchError) {
                         // message.error(err.message, 1);
-                        console.log(err.message)
+                        console.log(err.msg)
                         resolve(err);
                     } else {
                         reject(err);

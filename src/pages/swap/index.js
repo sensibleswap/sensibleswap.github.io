@@ -5,8 +5,8 @@ import CustomIcon from 'components/icon';
 import TokenLogo from 'components/tokenicon';
 import styles from './index.less';
 import _ from 'i18n';
-import { Button, Form, InputNumber, Modal } from 'antd';
-import { DownOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Form, InputNumber } from 'antd';
+import { DownOutlined, SettingOutlined } from '@ant-design/icons';
 import SelectToken from '../selectToken';
 import Setting from '../setting';
 import { connect } from 'umi';
@@ -33,11 +33,11 @@ const menu = [
 ];
 
 
-@connect(({ user, loading }) => {
+@connect(({ pair, loading }) => {
     const { effects } = loading;
     return {
-        ...user,
-        loading: effects['service/queryTx'] || false
+        ...pair,
+        loading: effects['pair/getAllPairs'] || effects['pair/getPairData']
     }
 
 })
@@ -52,23 +52,39 @@ export default class Swap extends Component {
             aim_amount: 0,
             slip: 0,
             fee: 0,
-            lastMod: ''
+            lastMod: '',
+            dirForward: true //交易对方向，true正向 false反向
             // bsvToToken: true,
 
         }
         this.formRef = React.createRef();
     }
 
+    componentDidMount() {
+        this.fetch()
+    }
+    
+    async fetch() {
+
+        const { dispatch, } = this.props;
+        await dispatch({
+            type: 'pair/getAllPairs',
+        });
+        
+        let { currentPair } = this.props;
+        await dispatch({
+            type: 'pair/getPairData',
+            payload: {
+                currentPair
+            }
+        })
+    }
 
     switch = async () => {
-        const { dispatch, origin_token_id, aim_token_id } = this.props;
-        await dispatch({
-            type: 'user/save',
-            payload: {
-                origin_token_id: aim_token_id,
-                aim_token_id: origin_token_id
-            }
-        });
+        let {dirForward} = this.state;
+        this.setState({
+            dirForward: !dirForward
+        })
         const { current } = this.formRef;
         const { origin_amount, aim_amount } = current.getFieldsValue(['origin_amount', 'aim_amount']);
         const { lastMod } = this.state;
@@ -98,10 +114,6 @@ export default class Swap extends Component {
         this.setState({
             page: name
         })
-    }
-    findToken = (id) => {
-        const { tokens } = this.props;
-        return tokens.find(v => v.tokenId === id)
     }
 
     changeOriginAmount = (value) => {
@@ -151,14 +163,14 @@ export default class Swap extends Component {
     }
 
     renderOriginToken() {
-        const { origin_token_id } = this.props;
-        const origin_token = this.findToken(origin_token_id);
-        if (!origin_token) return <div>notoken</div>;
+        const { token1, token2 } = this.props;
+        const { dirForward } = this.state;
+        const origin_token = dirForward ? token1 : token2;
         return <div className={styles.box}>
             <div className={styles.coin}>
-                <TokenLogo name={origin_token.name} icon={origin_token.icon} />
+                <TokenLogo name={origin_token.symbol} />
                 <div className={styles.name}>{origin_token.symbol}</div>
-                <DownOutlined onClick={() => this.showUI('selectToken_origin')} />
+                <DownOutlined onClick={() => this.showUI('selectToken')} />
             </div>
             <FormItem
                 name={'origin_amount'}>
@@ -174,14 +186,14 @@ export default class Swap extends Component {
     }
 
     renderAimToken() {
-        const { aim_token_id, pair_data } = this.props;
-        const aim_token = this.findToken(aim_token_id);
-        if (!aim_token) return <div>notoken</div>;
+        const { token1, token2, pairData } = this.props;
+        const { dirForward } = this.state;
+        const aim_token = dirForward ? token2 : token1;
         return <div className={styles.box}>
             <div className={styles.coin}>
-                <div style={{ width: 40 }}>{aim_token.name && <TokenLogo name={aim_token.name} icon={aim_token.icon} />}</div>
+                <div style={{ width: 40 }}>{aim_token.symbol && <TokenLogo name={aim_token.symbol} />}</div>
                 <div className={styles.name}>{aim_token.symbol || _('select')}</div>
-                <DownOutlined onClick={() => this.showUI('selectToken_aim')} />
+                <DownOutlined onClick={() => this.showUI('selectToken')} />
             </div>
             <FormItem
                 name={'aim_amount'}>
@@ -192,15 +204,15 @@ export default class Swap extends Component {
                     onPressEnter={this.changeAimAmount}
                     formatter={value => parseFloat(value || 0)}
                     min='0'
-                    max={Math.floor(pair_data.pairLiquidity ? pair_data.pairLiquidity[1].amount : 0)}
+                    max={Math.floor(pairData ? pairData.swapToken1Amount : 0)}
                 />
             </FormItem>
         </div>
     }
 
     setOriginBalance = () => {
-        const { origin_token_id } = this.props;
-        const origin_token = this.findToken(origin_token_id);
+        const { token1, token2 } = this.props;
+        const origin_token = dirIndex ? token1 : token2;
 
         const origin_amount = origin_token.value || 0;
         this.formRef.current.setFieldsValue({
@@ -223,36 +235,14 @@ export default class Swap extends Component {
             })
         }
     }
-    // setAimBalance = () => {
-    //     const { aim_token_id } = this.props;
-    //     const aim_token = this.findToken(aim_token_id);
-    //     const { pairLiquidity } = this.props.pair_data;
-
-    //     this.formRef.current.setFieldsValue({
-    //         aim_amount: aim_token.value || 0,
-    //         origin_amount: BigNumber(aim_token.value || 0).multipliedBy(pairLiquidity[0].amount).div(pairLiquidity[1].amount).toFixed(4).toString(),
-    //     });
-    //     this.setState({
-    //         origin_amount,
-    //         aim_amount
-    //     });
-    //     // this.calc()
-    // }
 
     calc = (origin_amount = 0, aim_amount = 0) => {
         //TODO: aim_amount不能大于池里token的数量，但交互要怎么展示
         //TODO: origin_amount不能比手续费小
-        const { origin_token_id, aim_token_id, pair_data } = this.props;
-        const { pairLiquidity } = pair_data;
-        let amount1, amount2;
-        pairLiquidity.forEach(item => {
-            if (item.tokenid === origin_token_id) {
-                amount1 = item.amount;
-            }
-            if (item.tokenid === aim_token_id) {
-                amount2 = item.amount;
-            }
-        })
+        const { pairData} = this.props;
+        const {dirForward} = this.state;
+        let amount1 = dirForward ? pairData.swapToken1Amount : pairData.swapToken2Amount;
+        let amount2 = dirForward ? pairData.swapToken2Amount : pairData.swapToken1Amount;
         const total = BigNumber(amount1).multipliedBy(amount2);
         const p = BigNumber(amount2).dividedBy(amount1);
         let newAmount1 = amount1, newAmount2 = amount2;
@@ -302,26 +292,16 @@ export default class Swap extends Component {
     }
 
     renderForm = () => {
-        const { origin_token_id, aim_token_id, pair_data } = this.props;
-        const origin_token = this.findToken(origin_token_id);
-        const aim_token = this.findToken(aim_token_id) || {};
-        if (!origin_token) return null;
-        const { slip, fee, lastMod } = this.state;
-        const { pairLiquidity } = pair_data;
+        const { token1, token2, pairData } = this.props;
+        const {dirForward} = this.state;
+        const origin_token = dirForward ? token1 : token2;
+        const aim_token = dirForward ? token2 : token1;
+        const { slip, fee } = this.state;
         let price = 0;
-        let amount1, amount2;
-        if (pairLiquidity) {
-            pairLiquidity.forEach(item => {
-                if (item.tokenid === origin_token_id) {
-                    amount1 = item.amount;
-                }
-                if (item.tokenid === aim_token_id) {
-                    amount2 = item.amount;
-                }
-            })
-            price = BigNumber(amount1).dividedBy(amount2).toFixed(4).toString();
+        let amount1 = dirForward ? pairData.swapToken1Amount : pairData.swapToken2Amount;
+        let amount2 = dirForward ? pairData.swapToken2Amount : pairData.swapToken1Amount;
 
-        }
+        price = BigNumber(amount1).dividedBy(amount2).toFixed(4).toString();
         const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
         const beyond = parseFloat(slip) > parseFloat(tol);
 
@@ -372,16 +352,16 @@ export default class Swap extends Component {
     }
 
     renderButton() {
-        const { isLogin, origin_token_id, pair_data } = this.props;
-        const { slip, lastMod, origin_amount, aim_amount } = this.state;
-        const origin_token = this.findToken(origin_token_id);
+        const { isLogin, pairData, token1, token2 } = this.props;
+        const { slip, lastMod, origin_amount, aim_amount, dirForward } = this.state;
+        const origin_token = dirForward ? token1 : token2;
 
         const tol = datas[window.localStorage.getItem(storage_name)] || datas[defaultIndex];
         const beyond = parseFloat(slip) > parseFloat(tol);
         if (!isLogin) {
             // 未登录
             return <Button className={styles.btn_wait} onClick={this.login}>{_('login')}</Button>
-        } else if (!pair_data.pairLiquidity) {
+        } else if (!pairData) {
             // 不存在的交易对
             return <Button className={styles.btn_wait}>{_('no_pair')}</Button>
         } else if (!lastMod) {
@@ -390,7 +370,7 @@ export default class Swap extends Component {
         } else if (parseFloat(origin_amount) > parseFloat(origin_token.value || 0)) {
             // 余额不足
             return <Button className={styles.btn_wait}>{_('lac_balance')}</Button>
-        } else if (parseFloat(aim_amount) > pair_data.pairLiquidity[1].amount) {
+        } else if (parseFloat(aim_amount) > pairData.swapToken1Amount) {
             // 池中币不足
             return <Button className={styles.btn_wait}>{_('not_enough')}</Button>
         } else if (beyond) {
@@ -422,10 +402,10 @@ export default class Swap extends Component {
     }
 
     renderResult() {
-        const { showDetail, origin_amount, aim_amount, fee } = this.state;
-        const { origin_token_id, aim_token_id, accountName } = this.props;
-        const origin_token = this.findToken(origin_token_id);
-        const aim_token = this.findToken(aim_token_id);
+        const { showDetail, origin_amount, aim_amount, fee, dirForward } = this.state;
+        const { accountName, token1, token2 } = this.props;
+        const origin_token = dirForward ? token1 : token2;
+        const aim_token = dirForward ? token2 : token1;
 
         return <div className={styles.content}>
             <div className={styles.finish_logo}>
@@ -497,40 +477,13 @@ export default class Swap extends Component {
         </div>;
     }
 
-    selectedToken = (tokenId) => {
-        if (tokenId) {
-            const { page } = this.state;
-            const { origin_token_id, aim_token_id, dispatch } = this.props;
-            // const _token = tokens.find(v => v.tokenId === tokenId);
-            if (page === 'selectToken_origin') {
-
-                dispatch({
-                    type: 'user/save',
+    selectedToken = (currentPair) => {
+        if (currentPair && currentPair !== this.props.currentPair) {
+            if (this.state.page === 'selectToken') {
+                this.props.dispatch({
+                    type: 'pair/getPairData',
                     payload: {
-                        origin_token_id: tokenId
-                    }
-
-                })
-                dispatch({
-                    type: 'service/queryTx',
-                    payload: {
-                        tokenids: [tokenId, aim_token_id]
-                    }
-                })
-            }
-            if (page === 'selectToken_aim') {
-
-                dispatch({
-                    type: 'user/save',
-                    payload: {
-                        aim_token_id: tokenId
-                    }
-
-                })
-                dispatch({
-                    type: 'service/queryTx',
-                    payload: {
-                        tokenids: [origin_token_id, tokenId]
+                        currentPair
                     }
                 })
             }
@@ -539,18 +492,19 @@ export default class Swap extends Component {
     }
 
     render() {
-        if (this.props.loading) return <Loading />
+
+        const { currentPair, loading } = this.props;
+        if (loading || !currentPair) return <Loading />
         const { page } = this.state;
-        const { origin_token_id } = this.props;
         return <div style={{ position: 'relative' }}>
             {this.renderSwap()}
-            <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken_origin' || page === 'selectToken_aim') ? 'block' : 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, display: (page === 'selectToken') ? 'block' : 'none' }}>
                 <div className={styles.selectToken_wrap}>
                     <SelectToken close={(id) => this.selectedToken(id, page)} />
                 </div>
             </div>
             <div style={{ position: 'absolute', top: 0, left: 0, display: page === 'setting' ? 'block' : 'none' }}><Setting close={() => this.showUI('form')} /></div>
-            
+
         </div>
     }
 }

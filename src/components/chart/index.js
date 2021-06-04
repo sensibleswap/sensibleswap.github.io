@@ -6,14 +6,14 @@ import * as echarts from 'echarts';
 import { connect } from 'umi';
 
 let option;
-const xdata = []
+const xData = []
 const datas = [
     [],
     [],
     []
 ]
 for (let i = 0; i < 30; i++) {
-    xdata.push(i);
+    xData.push(i);
     datas[0].push(Math.random() * 100);
     datas[1].push(Math.random() * 120);
     datas[2].push(Math.random() * 150);
@@ -23,7 +23,7 @@ for (let i = 0; i < 30; i++) {
 option = {
     xAxis: {
         type: 'category',
-        data: xdata,
+        data: xData,
         show: false
     },
     yAxis: {
@@ -72,15 +72,15 @@ export default class Chart extends Component {
     componentDidMount() {
         const chartDom = document.getElementById('J_Chart');
         this.myChart = echarts.init(chartDom);
-        const { brokenLine } = this.props.pair_data;
-        const xData = [];
-        const data = [];
-        brokenLine && Object.keys(brokenLine).forEach(item => {
-            xData.push(brokenLine[item].time);
-            data.push(brokenLine[item].amount);
-        })
-        // option.xAxis.data = xData;
-        // option.series[0].data = data;
+        // const { brokenLine } = this.props.pair_data;
+        // const xData = [];
+        // const data = [];
+        // brokenLine && Object.keys(brokenLine).forEach(item => {
+        //     xData.push(brokenLine[item].time);
+        //     data.push(brokenLine[item].amount);
+        // })
+        option.xAxis.data = xData;
+        option.series[0].data = datas[0];
         option && this.myChart.setOption(option);
 
     }

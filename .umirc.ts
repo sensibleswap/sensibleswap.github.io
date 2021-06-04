@@ -20,10 +20,8 @@ export default defineConfig({
     api: '@/api'
   },
   proxy: {
-    '/api.json': {
-      target: 'http://127.0.0.1:8888',
-      changeOrigin: true,
-    }
+      context: ['/allpairs', '/swapinfo'],
+      target: 'http://47.244.2.233:18333',
   },
   copy: [
     {
