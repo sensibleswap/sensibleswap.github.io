@@ -212,7 +212,7 @@ export default class Swap extends Component {
 
     setOriginBalance = () => {
         const { token1, token2 } = this.props;
-        const origin_token = dirIndex ? token1 : token2;
+        const origin_token = this.state.dirIndex ? token1 : token2;
 
         const origin_amount = origin_token.value || 0;
         this.formRef.current.setFieldsValue({
